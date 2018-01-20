@@ -44,10 +44,10 @@ frame_equalizer_impl::frame_equalizer_impl(Equalizer algo, double freq, double b
 
 	message_port_register_out(pmt::mp("symbols"));
 
-	d_bpsk = constellation_bpsk::make();
-	d_qpsk = constellation_qpsk::make();
-	d_16qam = constellation_16qam::make();
-	d_64qam = constellation_64qam::make();
+	d_bpsk = constellation_bpsk::make(); // constellation object for bpsk of class constellation_bpsk
+	d_qpsk = constellation_qpsk::make(); // constellation object for bpsk of class constellation_qpsk
+	d_16qam = constellation_16qam::make(); // constellation object for bpsk of class constellation_16qam
+	d_64qam = constellation_64qam::make(); //// constellation object for bpsk of class constellation_64qam
 
 	d_frame_mod = d_bpsk;
 
@@ -117,20 +117,20 @@ frame_equalizer_impl::general_work (int noutput_items,
 
 	int i = 0;
 	int o = 0;
-	gr_complex symbols[48];
-	gr_complex current_symbol[64];
+	gr_complex symbols[48]; // equalized symbols 
+	gr_complex current_symbol[64]; // unequalized symbols 
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
 
 	while((i < ninput_items[0]) && (o < noutput_items)) {
 
-		get_tags_in_window(tags, 0, i, i + 1, pmt::string_to_symbol("wifi_start"));
+		get_tags_in_window(tags, 0, i, i + 1, pmt::string_to_symbol("wifi_start")); // this tag is coming from sync_short.cc
 
 		// new frame
-		if(tags.size()) {
-			d_current_symbol = 0;
-			d_frame_symbols = 0;
-			d_frame_mod = d_bpsk;
+		if(tags.size()) { // if got the tag wifi_start, time to decode SIGNAL field
+			d_current_symbol = 0; // counter index for parsing the symbols in the current frame
+			d_frame_symbols = 0; // it is total no of ofdm symbols in that frame, its populated after decoding SIGNAL field
+			d_frame_mod = d_bpsk; // SIGNAL field is bpsk
 
 			d_freq_offset_from_synclong = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI);
 			d_epsilon0 = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI * d_freq);
@@ -140,7 +140,7 @@ frame_equalizer_impl::general_work (int noutput_items,
 		}
 
 		// not interesting -> skip
-		if(d_current_symbol > (d_frame_symbols + 2)) {
+		if(d_current_symbol > (d_frame_symbols + 2)) { 
 			i++;
 			continue;
 		}
@@ -202,7 +202,7 @@ frame_equalizer_impl::general_work (int noutput_items,
 
 		// do equalization
 		d_equalizer->equalize(current_symbol, d_current_symbol,
-				symbols, out + o * 48, d_frame_mod);
+				symbols, out + o * 48, d_frame_mod); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
 
 		// signal field
 		if(d_current_symbol == 2) {
@@ -282,6 +282,7 @@ frame_equalizer_impl::parse_signal(uint8_t *decoded_bits) {
 	case 11:
 		d_frame_encoding = 0;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 24);
+                //std::cout << d_frame_symbols << std::endl;
 		d_frame_mod = d_bpsk;
 		dout << "Encoding: 3 Mbit/s   ";
 		break;
