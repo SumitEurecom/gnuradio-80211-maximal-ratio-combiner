@@ -17,17 +17,17 @@
  */
 
 
-#ifndef INCLUDED_IEEE802_11_soft_frame_equalizer_H
-#define INCLUDED_IEEE802_11_soft_frame_equalizer_H
+#ifndef INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_H
+#define INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_H
 
 #include <ieee802-11/api.h>
 #include <gnuradio/block.h>
 
-enum Equalizer {
-	LS   = 0,
-	LMS  = 1,
-	COMB = 2,
-	STA  = 3,
+enum Equalizer_soft {
+	LS_s   = 0,
+	LMS_s  = 1,
+	COMB_s = 2,
+	STA_s  = 3,
 };
 
 namespace gr {
@@ -38,9 +38,9 @@ class IEEE802_11_API soft_frame_equalizer : virtual public gr::block
 
 public:
 	typedef boost::shared_ptr<soft_frame_equalizer> sptr;
-	static sptr make(Equalizer algo, double freq, double bw,
+	static sptr make(Equalizer_soft algo, double freq, double bw,
 			bool log, bool debug);
-	virtual void set_algorithm(Equalizer algo) = 0;
+	virtual void set_algorithm(Equalizer_soft algo) = 0;
 	virtual void set_bandwidth(double bw) = 0;
 	virtual void set_frequency(double freq) = 0;
 };
@@ -48,4 +48,4 @@ public:
 } // namespace ieee802_11
 } // namespace gr
 
-#endif /* INCLUDED_IEEE802_11_soft_frame_equalizer_H */
+#endif /* INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_H */

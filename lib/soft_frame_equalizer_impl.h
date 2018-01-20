@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_IEEE802_11_soft_frame_equalizer_IMPL_H
-#define INCLUDED_IEEE802_11_soft_frame_equalizer_IMPL_H
+#ifndef INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_IMPL_H
+#define INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_IMPL_H
 
 #include <ieee802-11/soft_frame_equalizer.h>
 #include <ieee802-11/constellations.h>
@@ -30,10 +30,10 @@ class soft_frame_equalizer_impl : virtual public soft_frame_equalizer
 {
 
 public:
-	soft_frame_equalizer_impl(Equalizer algo, double freq, double bw, bool log, bool debug);
+	soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, bool log, bool debug);
 	~soft_frame_equalizer_impl();
 
-	void set_algorithm(Equalizer algo);
+	void set_algorithm(Equalizer_soft algo);
 	void set_bandwidth(double bw);
 	void set_frequency(double freq);
 
@@ -85,4 +85,4 @@ private:
 } // namespace ieee802_11
 } // namespace gr
 
-#endif /* INCLUDED_IEEE802_11_soft_frame_equalizer_IMPL_H */
+#endif /* INCLUDED_IEEE802_11_SOFT_FRAME_EQUALIZER_IMPL_H */

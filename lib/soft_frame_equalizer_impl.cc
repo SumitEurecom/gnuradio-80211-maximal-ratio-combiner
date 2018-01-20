@@ -28,13 +28,13 @@ namespace gr {
 namespace ieee802_11 {
 
 soft_frame_equalizer::sptr
-soft_frame_equalizer::make(Equalizer algo, double freq, double bw, bool log, bool debug) {
+soft_frame_equalizer::make(Equalizer_soft algo, double freq, double bw, bool log, bool debug) {
 	return gnuradio::get_initial_sptr
 		(new soft_frame_equalizer_impl(algo, freq, bw, log, debug));
 }
 
 
-soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer algo, double freq, double bw, bool log, bool debug) :
+soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, bool log, bool debug) :
 	gr::block("soft_frame_equalizer",
 			gr::io_signature::make(1, 1, 64 * sizeof(gr_complex)),
 			gr::io_signature::make(1, 1, 48)),
@@ -60,25 +60,25 @@ soft_frame_equalizer_impl::~soft_frame_equalizer_impl() {
 
 
 void
-soft_frame_equalizer_impl::set_algorithm(Equalizer algo) {
+soft_frame_equalizer_impl::set_algorithm(Equalizer_soft algo) {
 	gr::thread::scoped_lock lock(d_mutex);
 	delete d_equalizer;
 
 	switch(algo) {
 
-	case COMB:
+	case COMB_s:
 		dout << "Comb" << std::endl;
 		d_equalizer = new equalizer::comb();
 		break;
-	case LS:
+	case LS_s:
 		dout << "LS" << std::endl;
 		d_equalizer = new equalizer::ls();
 		break;
-	case LMS:
+	case LMS_s:
 		dout << "LMS" << std::endl;
 		d_equalizer = new equalizer::lms();
 		break;
-	case STA:
+	case STA_s:
 		dout << "STA" << std::endl;
 		d_equalizer = new equalizer::sta();
 		break;
