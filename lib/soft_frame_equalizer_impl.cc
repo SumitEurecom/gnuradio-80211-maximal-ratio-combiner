@@ -37,7 +37,7 @@ soft_frame_equalizer::make(Equalizer_soft algo, double freq, double bw, bool log
 soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, bool log, bool debug) :
 	gr::block("soft_frame_equalizer",
 			gr::io_signature::make(1, 1, 64 * sizeof(gr_complex)),
-	// TODO		gr::io_signature::make(1, 1, 48)),
+			gr::io_signature::make2(2, 2, 48, 48 * sizeof(float))),
 	d_current_symbol(0), d_log(log), d_debug(debug), d_equalizer(NULL),
 	d_freq(freq), d_bw(bw), d_frame_bytes(0), d_frame_symbols(0),
 	d_freq_offset_from_synclong(0.0) {
@@ -114,6 +114,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 	const gr_complex *in = (const gr_complex *) input_items[0];
 	uint8_t *out = (uint8_t *) output_items[0];
+	float *out1 = (float *) output_items[1];
 
 	int i = 0;
 	int o = 0;
@@ -202,12 +203,12 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 		// do equalization
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, out + o * 48, d_frame_mod); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
+				symbols, out + o * 48,out1 + o * 48, d_frame_mod); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
 
 		// signal field
 		if(d_current_symbol == 2) {
 
-			if(decode_signal_field(out + o * 48)) {
+			if(decode_signal_field(out + o * 48)) { // for test I will use hardbits for signal field
 
 				pmt::pmt_t dict = pmt::make_dict();
 				dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));

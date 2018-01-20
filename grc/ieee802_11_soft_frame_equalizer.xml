@@ -93,6 +93,13 @@
 	</source>
 
 	<source>
+		<name>llr_out</name>
+		<type>float</type>
+		<vlen>48</vlen>
+		<nports>1</nports>
+	</source>
+
+	<source>
 		<name>symbols</name>
 		<type>message</type>
         <optional>1</optional>

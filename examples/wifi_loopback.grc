@@ -869,7 +869,7 @@
     </param>
     <param>
       <key>taps</key>
-      <value>1.0</value>
+      <value>1.0,0.09</value>
     </param>
   </block>
   <block>
