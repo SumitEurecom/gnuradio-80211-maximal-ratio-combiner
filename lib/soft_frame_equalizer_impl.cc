@@ -37,7 +37,7 @@ soft_frame_equalizer::make(Equalizer_soft algo, double freq, double bw, bool log
 soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, bool log, bool debug) :
 	gr::block("soft_frame_equalizer",
 			gr::io_signature::make(1, 1, 64 * sizeof(gr_complex)),
-			gr::io_signature::make(1, 1, 48)),
+	// TODO		gr::io_signature::make(1, 1, 48)),
 	d_current_symbol(0), d_log(log), d_debug(debug), d_equalizer(NULL),
 	d_freq(freq), d_bw(bw), d_frame_bytes(0), d_frame_symbols(0),
 	d_freq_offset_from_synclong(0.0) {

@@ -27,7 +27,7 @@ namespace equalizer_soft {
 
 class ls_soft: public base_soft {
 public:
-	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, boost::shared_ptr<gr::digital::constellation> mod_soft);
+	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft);
 	virtual double get_snr_soft();
 private:
 	gr_complex d_H_soft[64];

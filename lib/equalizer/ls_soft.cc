@@ -21,7 +21,7 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, boost::shared_ptr<gr::digital::constellation> mod_soft) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft) {
 
 	if(n == 0) {
 		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); // first lts copied in d_H
@@ -50,6 +50,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			} else {
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
 				bits[c] = mod_soft->decision_maker(&symbols[c]);
+				llr[c] = -4*real(symbols[c]);
 				//std::cout << (unsigned int)bits[c] << "--" << symbols[c] << std::endl;
                                 c++;
 			}
