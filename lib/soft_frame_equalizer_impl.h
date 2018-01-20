@@ -20,7 +20,7 @@
 
 #include <ieee802-11/soft_frame_equalizer.h>
 #include <ieee802-11/constellations.h>
-#include "equalizer/base.h"
+#include "equalizer/base_soft.h"
 #include "viterbi_decoder.h"
 
 namespace gr {
@@ -50,7 +50,7 @@ private:
 	bool decode_signal_field(uint8_t *rx_bits);
 	void deinterleave(uint8_t *rx_bits);
 
-	equalizer::base *d_equalizer;
+	equalizer_soft::base_soft *d_equalizer;
 	gr::thread::mutex d_mutex;
 	std::vector<gr::tag_t> tags;
 	bool d_debug;

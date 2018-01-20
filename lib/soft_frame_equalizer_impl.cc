@@ -16,11 +16,11 @@
  */
 
 #include "soft_frame_equalizer_impl.h"
-#include "equalizer/base.h"
-#include "equalizer/comb.h"
-#include "equalizer/lms.h"
-#include "equalizer/ls.h"
-#include "equalizer/sta.h"
+#include "equalizer/base_soft.h"
+//#include "equalizer/comb.h"
+//#include "equalizer/lms.h"
+#include "equalizer/ls_soft.h"
+//#include "equalizer/sta.h"
 #include "utils.h"
 #include <gnuradio/io_signature.h>
 
@@ -65,23 +65,23 @@ soft_frame_equalizer_impl::set_algorithm(Equalizer_soft algo) {
 	delete d_equalizer;
 
 	switch(algo) {
-
-	case COMB_s:
+/*
+	case COMB:
 		dout << "Comb" << std::endl;
 		d_equalizer = new equalizer::comb();
-		break;
+		break; */
 	case LS_s:
 		dout << "LS" << std::endl;
-		d_equalizer = new equalizer::ls();
+		d_equalizer = new equalizer_soft::ls_soft(); // defined in base_soft.h
 		break;
-	case LMS_s:
+/*	case LMS:
 		dout << "LMS" << std::endl;
 		d_equalizer = new equalizer::lms();
 		break;
-	case STA_s:
+	case STA:
 		dout << "STA" << std::endl;
 		d_equalizer = new equalizer::sta();
-		break;
+		break; */
 	default:
 		throw std::runtime_error("Algorithm not implemented");
 	}
@@ -152,7 +152,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 			current_symbol[i] *= exp(gr_complex(0, 2*M_PI*d_current_symbol*80*(d_epsilon0 + d_er)*(i-32)/64));
 		}
 
-		gr_complex p = equalizer::base::POLARITY[(d_current_symbol - 2) % 127];
+		gr_complex p = equalizer_soft::base_soft::POLARITY_soft[(d_current_symbol - 2) % 127];
 		gr_complex sum =
 			(current_symbol[11] *  p) +
 			(current_symbol[25] *  p) +
@@ -201,7 +201,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		}
 
 		// do equalization
-		d_equalizer->equalize(current_symbol, d_current_symbol,
+		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
 				symbols, out + o * 48, d_frame_mod); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
 
 		// signal field
@@ -212,7 +212,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 				pmt::pmt_t dict = pmt::make_dict();
 				dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
 				dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
-				dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr()));
+				dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_soft()));
 				dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
 				dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
 				add_item_tag(0, nitems_written(0) + o,

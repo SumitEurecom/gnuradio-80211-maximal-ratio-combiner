@@ -98,8 +98,10 @@ list(APPEND gr_ieee802_11_sources
     constellations_impl.cc
     decode_mac.cc
     equalizer/base.cc
+    equalizer/base_soft.cc
     equalizer/comb.cc
     equalizer/ls.cc
+    equalizer/ls_soft.cc
     equalizer/lms.cc
     equalizer/sta.cc
     ether_encap_impl.cc
