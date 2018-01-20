@@ -23,8 +23,8 @@ using namespace gr::ieee802_11::equalizer_soft;
 
 void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft) {
 
-int start = 5; // start sub carrier of interference
-int stop = start+10; // stop subcarrier of interference
+int start = 27; // start sub carrier of interference
+int stop = start+11; // stop subcarrier of interference
 int noise_interf = 0; // noise variance of interfered band
 int noise_non_interf = 0; // noise variance of non-interfered band
 
@@ -40,18 +40,20 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 				continue;
 			}
 		/////////////// local noise variance estimate ////////////////
-			if(i > start && i < stop)
+			if(i > start && i <= stop)
 			{
-			//std::cout << "interference" << std::endl;
-                        //std::cout << i << std::endl;
-			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(stop-start+1);
+			std::cout << "interference" << std::endl;
+                        std::cout << i << std::endl;
+			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(stop-start+1));
+			d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
 			noise_interf += d_N_soft[i];
 			}
 			else
 			{
 			//std::cout << "non interference" << std::endl;
                         //std::cout << i << std::endl;
-			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(52-stop+start-1); 
+			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(52-stop+start-1)); 
+			d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
 			noise_non_interf += d_N_soft[i];
 			}
 		/////////////// local noise variance estimate ////////////////                        
@@ -81,7 +83,7 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 
                         for (int i = 0; i < 64; i++) 
 			{
-			    std::cout << d_N_soft[i] << std::endl;
+			    std::cout << i <<" -- "<< d_N_soft[i] << std::endl;
 			}
 
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
