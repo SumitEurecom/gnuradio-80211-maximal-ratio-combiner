@@ -29,6 +29,7 @@ public:
 	~constellation_bpsk_impl();
 
 	unsigned int decision_maker(const gr_complex *sample);
+        std::vector<float> calc_soft_dec(gr_complex sample, float npwr=1.0);
 };
 
 

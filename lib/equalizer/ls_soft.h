@@ -31,10 +31,12 @@ public:
 	virtual double get_snr_soft();
 private:
 	gr_complex d_H_soft[64];
-	float d_N_soft[64];
+	float d_N_soft_loc[64];
 	float d_N_soft_conv[64];
-	float d_N_indv_soft[64];
+	float d_N_soft_indv[64];
 	double d_snr_soft;
+	int interference = 0; // interference present or not	
+
 };
 
 } /* namespace channel_estimation */
