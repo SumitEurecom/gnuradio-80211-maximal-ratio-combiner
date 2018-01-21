@@ -837,7 +837,7 @@
     </param>
     <param>
       <key>freq_offset</key>
-      <value>epsilon * 5.89e9 / 10e6</value>
+      <value>epsilon * 2.437e9 / 20e6</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1757,7 +1757,7 @@
     </param>
     <param>
       <key>bandwidth</key>
-      <value>10e6</value>
+      <value>20e6</value>
     </param>
     <param>
       <key>chan_est</key>
@@ -1769,7 +1769,7 @@
     </param>
     <param>
       <key>frequency</key>
-      <value>5.89e9</value>
+      <value>2.437e9</value>
     </param>
     <param>
       <key>sensitivity</key>

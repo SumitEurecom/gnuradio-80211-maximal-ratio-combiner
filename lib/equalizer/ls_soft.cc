@@ -39,13 +39,15 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 			if((i == 32) || (i < 6) || ( i > 58)) { // skip null padded subs and the dc 
 				continue;
 			}
+                        d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
 		/////////////// local noise variance estimate ////////////////
+		if(d_N_indv_soft[i] > 20000)
+		{
 			if(i > start && i <= stop)
 			{
 			std::cout << "interference" << std::endl;
                         std::cout << i << std::endl;
 			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(stop-start+1));
-			d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
 			noise_interf += d_N_soft[i];
 			}
 			else
@@ -53,9 +55,9 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 			//std::cout << "non interference" << std::endl;
                         //std::cout << i << std::endl;
 			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(52-stop+start-1)); 
-			d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
 			noise_non_interf += d_N_soft[i];
 			}
+		}
 		/////////////// local noise variance estimate ////////////////                        
 
 			noise += std::pow(std::abs(d_H_soft[i] - in[i]), 2);
@@ -83,7 +85,8 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 
                         for (int i = 0; i < 64; i++) 
 			{
-			    std::cout << i <<" -- "<< d_N_soft[i] << std::endl;
+				std::cout << d_N_indv_soft[i] << std::endl; // to print indv est
+//				std::cout << d_N_soft[i] << std::endl; // to print local est
 			}
 
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
