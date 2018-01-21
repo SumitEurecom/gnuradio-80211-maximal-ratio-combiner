@@ -32,6 +32,7 @@ public:
 private:
 	gr_complex d_H_soft[64];
 	float d_N_soft[64];
+	float d_N_soft_conv[64];
 	float d_N_indv_soft[64];
 	double d_snr_soft;
 };

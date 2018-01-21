@@ -23,30 +23,34 @@ using namespace gr::ieee802_11::equalizer_soft;
 
 void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft) {
 
-int start = 27; // start sub carrier of interference
-int stop = start+11; // stop subcarrier of interference
-int noise_interf = 0; // noise variance of interfered band
-int noise_non_interf = 0; // noise variance of non-interfered band
-
-
 	if(n == 0) {
 		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); // first lts copied in d_H
 
-	} else if(n == 1) {
+	} else if(n == 1) { // the second lts now 
+
 		double signal = 0;
 		double noise = 0;
-		for(int i = 0; i < 64; i++) {
-			if((i == 32) || (i < 6) || ( i > 58)) { // skip null padded subs and the dc 
-				continue;
-			}
-                        d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
-		/////////////// local noise variance estimate ////////////////
-		if(d_N_indv_soft[i] > 20000)
-		{
+		int start = 6; // start sub carrier of interference
+		int stop = start+11; // stop subcarrier of interference
+		int noise_interf = 0; // noise variance of interfered band
+		int noise_non_interf = 0; // noise variance of non-interfered band
+		int interference = 0; // interference present or not
+		int conv_est = 0; // noise variance conv method
+	
+		for(int i = 0; i < 64; i++) 
+		{ 
+		// skip null padded subs and the dc 		
+		if((i == 32) || (i < 6) || ( i > 58)) {continue;}
+
+                d_N_indv_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;// always do it
+                //if(d_N_indv_soft[i] > 20000) {interference = 1;}
+		// local noise variance estimate : when interference starts
+		//if(interference)
+		//{
 			if(i > start && i <= stop)
 			{
-			std::cout << "interference" << std::endl;
-                        std::cout << i << std::endl;
+			//std::cout << "interference band" << std::endl;
+                        //std::cout << i << std::endl;
 			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(stop-start+1));
 			noise_interf += d_N_soft[i];
 			}
@@ -57,8 +61,12 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 			d_N_soft[i] = (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/(2*(52-stop+start-1)); 
 			noise_non_interf += d_N_soft[i];
 			}
-		}
-		/////////////// local noise variance estimate ////////////////                        
+		//}
+
+		// conventional noise variance estimate : when no interference
+		//{
+			conv_est += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
+		//}
 
 			noise += std::pow(std::abs(d_H_soft[i] - in[i]), 2);
 			signal += std::pow(std::abs(d_H_soft[i] + in[i]), 2);
@@ -67,26 +75,18 @@ int noise_non_interf = 0; // noise variance of non-interfered band
 		}
 
 
-			for(int i = 0; i < 64; i++)
+		for(int i = 0; i < 64; i++)
 			{
-			if((i == 32) || (i < 6) || ( i > 58)) 
-			{
-				continue;
+				if((i == 32) || (i < 6) || ( i > 58)) {continue;}
+				if(i > start && i < stop){d_N_soft[i] = noise_interf;}
+				else { d_N_soft[i] = noise_non_interf; }
+				d_N_soft_conv[i] = conv_est/(2*52);
 			}
-				if(i > start && i < stop)
-				{
-					d_N_soft[i] = noise_interf;
-				}
-				else
-				{
-					d_N_soft[i] = noise_non_interf;
-				}
-			}
-
-                        for (int i = 0; i < 64; i++) 
+                for (int i = 0; i < 32; i++) 
 			{
-				std::cout << d_N_indv_soft[i] << std::endl; // to print indv est
-//				std::cout << d_N_soft[i] << std::endl; // to print local est
+				//std::cout << d_N_indv_soft[i] << std::endl; // to print indv est
+				//std::cout << d_N_soft_conv[i] << std::endl; // to print indv est
+				std::cout << d_N_soft[i] << std::endl; // to print local est
 			}
 
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
