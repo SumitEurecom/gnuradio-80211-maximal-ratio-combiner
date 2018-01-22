@@ -102,7 +102,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 				dout << "received complete frame - decoding" << std::endl;
 		// at this point everything is copied in "d_rx_soft_symbols" now call decode function
                 // input to decode() is "d_rx_soft_symbols"
-std::cout << "came here" << std::endl;
+                                //std::cout << "came here" << std::endl;
 				decode();
 				in += 48;
 				i++;

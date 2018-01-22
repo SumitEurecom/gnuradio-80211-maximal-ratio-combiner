@@ -123,7 +123,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
 
-	while((i < ninput_items[0]) && (o < noutput_items)) {
+	while((i < ninput_items[0]) && (o < noutput_items)) { // do this till 64 input items are consumed and 48 output items are outputted
 
 		get_tags_in_window(tags, 0, i, i + 1, pmt::string_to_symbol("wifi_start")); // this tag is coming from sync_short.cc
 
@@ -138,7 +138,9 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 			d_er = 0;
 
 			dout << "epsilon: " << d_epsilon0 << std::endl;
-		}
+		
+// this loop will be evaluated only once i.e. begining of the frame
+}
 
 		// not interesting -> skip
 		if(d_current_symbol > (d_frame_symbols + 2)) { 
@@ -203,7 +205,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 		// do equalization
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, out + o * 48,out1 + o * 48, d_frame_mod); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
+				symbols, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
 
 		// signal field
 		if(d_current_symbol == 2) {

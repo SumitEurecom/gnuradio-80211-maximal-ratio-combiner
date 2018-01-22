@@ -27,7 +27,7 @@ namespace equalizer_soft {
 
 class ls_soft: public base_soft {
 public:
-	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft);
+	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
 	virtual double get_snr_soft();
 private:
 	gr_complex d_H_soft[64];
@@ -35,8 +35,9 @@ private:
 	float d_N_soft_conv[64];
 	float d_N_soft_indv[64];
 	double d_snr_soft;
-	int interference = 0; // interference present or not	
-
+	int d_interference = 0; // interference present or not	
+	int imt = 0;
+	
 };
 
 } /* namespace channel_estimation */
