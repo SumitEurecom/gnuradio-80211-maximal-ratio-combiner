@@ -220,6 +220,10 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 						pmt::string_to_symbol("wifi_start"),
 						dict,
 						pmt::string_to_symbol(alias()));
+				add_item_tag(1, nitems_written(0) + o,
+						pmt::string_to_symbol("wifi_start"),
+						dict,
+						pmt::string_to_symbol(alias()));
 			}
 		}
 

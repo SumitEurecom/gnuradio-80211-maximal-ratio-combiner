@@ -582,53 +582,6 @@
     </param>
   </block>
   <block>
-    <key>blocks_null_sink</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>bus_conns</key>
-      <value>[[0,],]</value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(296, 896)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>blocks_null_sink_0</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>float</value>
-    </param>
-    <param>
-      <key>num_inputs</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>48</value>
-    </param>
-  </block>
-  <block>
     <key>blocks_stream_to_vector</key>
     <param>
       <key>alias</key>
@@ -1292,7 +1245,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(504, 940)</value>
+      <value>(456, 1124)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1339,7 +1292,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(504, 1068)</value>
+      <value>(48, 988)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1598,7 +1551,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(512, 832)</value>
+      <value>(584, 824)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2144,12 +2097,6 @@
     <sink_block_id>sync_short</sink_block_id>
     <source_key>0</source_key>
     <sink_key>1</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_soft_frame_equalizer_0</source_block_id>
-    <sink_block_id>blocks_null_sink_0</sink_block_id>
-    <source_key>1</source_key>
-    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>ieee802_11_soft_frame_equalizer_0</source_block_id>

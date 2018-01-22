@@ -59,7 +59,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 	dout << "Decode MAC: input " << ninput_items[0] << std::endl;
 
 	while(i < ninput_items[0]) {
-
+                //std::cout << "searching" << std::endl;
 		get_tags_in_range(tags, 0, nread + i, nread + i + 1, // find the moment when wifi starts
 			pmt::string_to_symbol("wifi_start"));
 
@@ -102,6 +102,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 				dout << "received complete frame - decoding" << std::endl;
 		// at this point everything is copied in "d_rx_soft_symbols" now call decode function
                 // input to decode() is "d_rx_soft_symbols"
+std::cout << "came here" << std::endl;
 				decode();
 				in += 48;
 				i++;
