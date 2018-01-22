@@ -10,7 +10,7 @@
     </param>
     <param>
       <key>window_size</key>
-      <value>1280, 1024</value>
+      <value>1280, 1224</value>
     </param>
     <param>
       <key>category</key>
@@ -1316,6 +1316,53 @@
     </param>
   </block>
   <block>
+    <key>ieee802_11_decode_mac_soft</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>debug</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(504, 1068)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>180</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>ieee802_11_decode_mac_soft_0</value>
+    </param>
+    <param>
+      <key>log</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
     <key>ieee802_11_frame_equalizer</key>
     <param>
       <key>algo</key>
@@ -1351,7 +1398,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(776, 824)</value>
+      <value>(776, 984)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1402,7 +1449,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(208, 108)</value>
+      <value>(208, 92)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1758,7 +1805,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(424, 116)</value>
+      <value>(368, 100)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2101,6 +2148,12 @@
   <connection>
     <source_block_id>ieee802_11_soft_frame_equalizer_0</source_block_id>
     <sink_block_id>blocks_null_sink_0</sink_block_id>
+    <source_key>1</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>ieee802_11_soft_frame_equalizer_0</source_block_id>
+    <sink_block_id>ieee802_11_decode_mac_soft_0</sink_block_id>
     <source_key>1</source_key>
     <sink_key>0</sink_key>
   </connection>

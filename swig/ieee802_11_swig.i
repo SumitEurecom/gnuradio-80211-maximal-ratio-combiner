@@ -25,6 +25,7 @@
 #include "ieee802-11/chunks_to_symbols.h"
 #include "ieee802-11/constellations.h"
 #include "ieee802-11/decode_mac.h"
+#include "ieee802-11/decode_mac_soft.h"
 #include "ieee802-11/ether_encap.h"
 #include "ieee802-11/frame_equalizer.h"
 #include "ieee802-11/soft_frame_equalizer.h"
@@ -48,6 +49,7 @@
 %include "ieee802-11/chunks_to_symbols.h"
 %include "ieee802-11/constellations.h"
 %include "ieee802-11/decode_mac.h"
+%include "ieee802-11/decode_mac_soft.h"
 %include "ieee802-11/ether_encap.h"
 %include "ieee802-11/frame_equalizer.h"
 %include "ieee802-11/soft_frame_equalizer.h"
@@ -62,6 +64,7 @@
 
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, chunks_to_symbols);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, decode_mac);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, decode_mac_soft);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, ether_encap);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, frame_equalizer);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, soft_frame_equalizer);

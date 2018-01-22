@@ -29,7 +29,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 	} else if(n == 1) { // the second lts now 
                 double signal = 0;
 		double noise = 0;
-		int start = 6; // start sub carrier of interference
+		int start = 5; // start sub carrier of interference
 		int stop = start+11; // stop subcarrier of interference
 		int noise_interf = 0; // noise variance of interfered band
 		int noise_non_interf = 0; // noise variance of non-interfered band
@@ -104,14 +104,14 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				continue;
 			} else {
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
-				bits[c] = mod_soft->decision_maker(&symbols[c]);
+				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
                                 if(interference){
-					llr[c] = (-4*real(symbols[c]))/d_N_soft_loc[i]; 
+					llr[c] = (-4*real(symbols[c]))/d_N_soft_loc[i]; //soft bits +llr scaling
 					interference = 0;}
-				else{
+				else{ 
 					llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];}
 
-// soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
+//TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
 				//std::cout << (unsigned int)bits[c] << "--" << symbols[c] << std::endl;
                                 c++;
                                 //std::cout << "c--" << c <<"--i--"<< i <<std::endl;

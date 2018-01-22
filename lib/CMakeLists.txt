@@ -97,6 +97,7 @@ list(APPEND gr_ieee802_11_sources
     chunks_to_symbols_impl.cc
     constellations_impl.cc
     decode_mac.cc
+    decode_mac_soft.cc
     equalizer/base.cc
     equalizer/base_soft.cc
     equalizer/comb.cc
