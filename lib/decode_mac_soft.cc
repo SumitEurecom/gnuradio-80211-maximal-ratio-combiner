@@ -95,7 +95,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 
 		if(copied < d_frame.n_sym) {
 			dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
-			std::memcpy(d_rx_soft_symbols + (copied * 48), in, 48);
+			std::memcpy(d_rx_soft_symbols + (copied * 48), in, 48*sizeof(float));
 			copied++;
 
 			if(copied == d_frame.n_sym) {
@@ -120,12 +120,16 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 	return 0;
 }
 
+
+
+
 void decode() {
 
 	for(int i = 0; i < d_frame.n_sym * 48; i++) {
 		for(int k = 0; k < d_ofdm.n_bpsc; k++) { // n_bpsc = 1 for bpsk 
 			//d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = !!(d_rx_soft_symbols[i] & (1 << k)); 
-			d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = d_rx_soft_symbols[i];
+			d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = d_rx_soft_symbols[i*d_ofdm.n_bpsc+k];
+                        //std::cout << d_rx_soft_bits[i*d_ofdm.n_bpsc+k] << std::endl;
                         // TODO above will work only for bpsk becz d_ofdm.n_bpsc = 1 for bpsk
 		}
 	}
@@ -238,7 +242,7 @@ private:
 	double d_snr;  // dB
 	double d_nom_freq;  // nominal frequency, Hz
 	double d_freq_offset;  // frequency offset, Hz
-	viterbi_decoder d_decoder;
+	viterbi_decoder d_decoder; // an object of the class viterbi decoder
 
 	float d_rx_soft_symbols[48 * MAX_SYM]; // float type to store llrs coming from ls_soft.cc
 	float d_rx_soft_bits[MAX_ENCODED_BITS]; // float type to store llrs to be fed to deinterleaver

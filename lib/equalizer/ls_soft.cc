@@ -98,11 +98,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 		{
 			d_interference = 1;
 			std::cout << "interference detected" << std::endl;
-			std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << std::endl;
+			std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
 		}
 
 	} else { // from n = 2 onwards, data symbols are there
-
+                //std::cout << "new symbol " << std::endl;
 		if(d_interference )
 		{
                 	if(n > 2)
@@ -123,13 +123,14 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			} else {
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
 				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
+                                //std::cout << "bits[c]" << (int)bits[c] << std::endl;
                                 if(d_interference){
 					llr[c] = (-4*real(symbols[c]))/d_N_soft_loc[i]; //soft bits +llr scaling
-                                        //std::cout << "my scaling" << std::endl;
+                                        //std::cout << llr[c] << std::endl;
 					}
 				else{ 
 					llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
-					//std::cout << "conv scaling" << std::endl;
+					//std::cout << llr[c] << std::endl;
 				    }
 
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
