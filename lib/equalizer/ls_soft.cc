@@ -35,15 +35,15 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 //imt = 1; // check point var, set in one section, to be accessed in another section during multiple calls of equalize_soft
                 double signal = 0;
 		double noise = 0;
-		int start = 5; // start sub carrier of interference
-		int stop = start+11; // stop subcarrier of interference
-		int noise_interf = 0; // local noise variance of interfered band
-		int noise_non_interf = 0; // local noise variance of non-interfered band
-		int conv_est = 0; // noise variance conv method
-		int temp1 = 0;
-		int temp2 = 0;
-		int temp3 = 0;
-		int temp4 = 0;
+		int start = 21; // start sub carrier of interference
+		int stop = start+7; // stop subcarrier of interference
+		double noise_interf = 0; // local noise variance of interfered band
+		double noise_non_interf = 0; // local noise variance of non-interfered band
+		double conv_est = 0; // noise variance conv method
+		double temp1 = 0;
+		double temp2 = 0;
+		double temp3 = 0;
+		double temp4 = 0;
 // calculation loop	
 		for(int i = 0; i < 64; i++) // loop noise vars calc
 		{ 
@@ -51,15 +51,8 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			{
 				continue; // skip nulls and dc
 			} 
-			if(i >= 6 && i <= 16) // TODO check these indices 
-			{       // sum over interfered subs
-				temp3  += (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
-			}
-			else
-			{       // sum over non interferred subs
-				temp4 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2))/2;
-			} 
-			if(i > start && i <= stop)
+			 
+			if(i >= start && i <= stop)
 			{
 			noise_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
 			}
@@ -76,8 +69,9 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 		}
 		
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
-                d_SIR = (float)(10 * std::log10((temp3/11)/(temp4/41)/ 2)); // SIR in some sense :) 
-		std::cout << "SIR " << (float)d_SIR << " "<< temp3/11 << " "<< temp4/41 <<std::endl;
+		//std::cout << signal << "  " << noise << std::endl;                
+		d_NLR = (10 * std::log10((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))))); // Noise Level Ratio
+		std::cout << "NLR " << (double)d_NLR << " "<< "SNR" << " "<< (double)d_snr_soft <<std::endl;
 
 // assignment loop
 		for(int i = 0; i < 64; i++)
@@ -98,7 +92,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			d_N_soft_conv[i] = conv_est/(2*52);
 		}
 	
-		if(d_SIR > d_threshold) {d_interference = 1;}
+		if(d_NLR > d_threshold) {d_interference = 1;std::cout << "interference detected" << std::endl;}
 
 	} else { // from n = 2 onwards, data symbols are there
 		if(d_interference && ((n - d_frame_symbols) == 2)){d_interference = 0; 
