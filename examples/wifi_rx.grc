@@ -908,11 +908,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>False</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/tmp/wifi.pcap</value>
+      <value>/home/john/t0+25/wifi_under_interf.pcap</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1218,7 +1218,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>False</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -3543,7 +3543,7 @@
     </param>
     <param>
       <key>dev_args</key>
-      <value>""</value>
+      <value>"serial=F5BA6B"</value>
     </param>
     <param>
       <key>_enabled</key>

@@ -70,8 +70,10 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 		
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
 		//std::cout << signal << "  " << noise << std::endl;                
-		d_NLR = (10 * std::log10((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))))); // Noise Level Ratio
-		std::cout << "NLR " << (double)d_NLR << " "<< "SNR" << " "<< (double)d_snr_soft <<std::endl;
+//		d_NLR = (10 * std::log10((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))))); // Noise Level Ratio
+
+		d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
+		//std::cout << "NLR " << (double)d_NLR << " "<< "SNR" << " "<< (double)d_snr_soft <<std::endl;
 
 // assignment loop
 		for(int i = 0; i < 64; i++)
@@ -92,13 +94,27 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			d_N_soft_conv[i] = conv_est/(2*52);
 		}
 	
-		if(d_NLR > d_threshold) {d_interference = 1;std::cout << "interference detected" << std::endl;}
+		if(d_NLR > d_threshold) 
+		{
+			d_interference = 1;
+			std::cout << "interference detected" << std::endl;
+			std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << std::endl;
+		}
 
 	} else { // from n = 2 onwards, data symbols are there
-		if(d_interference && ((n - d_frame_symbols) == 2)){d_interference = 0; 
-                 std::cout << "interference var reset, check again in new frame" << std::endl;
+
+		if(d_interference )
+		{
+                	if(n > 2)
+			{
+				if((n - d_frame_symbols) == 2)
+				{
+					d_interference = 0; 
+                 			std::cout << "reset "<< "n->" << n << " d_frame_symbols->" << d_frame_symbols << std::endl;
+				}
+			}
 		}
-//std::cout << "n->" << n <<" interference->" << d_interference << " d_frame_symbols->" << d_frame_symbols << std::endl;
+
                 //std::cout << "n--" << n << "i-- " << imt << "d_frame_symbols" << d_frame_symbols << std::endl;
 		int c = 0;
 		for(int i = 0; i < 64; i++) {
@@ -109,11 +125,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
                                 if(d_interference){
 					llr[c] = (-4*real(symbols[c]))/d_N_soft_loc[i]; //soft bits +llr scaling
-                                        //std::cout << "llr" << llr[c] << std::endl;
+                                        //std::cout << "my scaling" << std::endl;
 					}
 				else{ 
 					llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
-					//std::cout << "llr" << llr[c] << std::endl;
+					//std::cout << "conv scaling" << std::endl;
 				    }
 
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
