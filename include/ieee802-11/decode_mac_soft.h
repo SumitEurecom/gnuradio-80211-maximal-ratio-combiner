@@ -35,6 +35,6 @@ public:
 }  // namespace ieee802_11
 }  // namespace gr
 
-#endif /* INCLUDED_IEEE802_11_DECODE_MAC_H */
+#endif /* INCLUDED_IEEE802_11_DECODE_MAC_SOFT_H */
 
 

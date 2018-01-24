@@ -31,11 +31,6 @@
 #include <cstring>
 #include <iostream>
 
-extern unsigned char ccodedot11_table[128],ccodedot11_table_rev[128];
-static unsigned char inputs[64][4098];
-static unsigned short survivors[64][4098];
-static short partial_metrics[64],partial_metrics_new[64];
-
 /* The basic Viterbi decoder operation, called a "butterfly"
  * operation because of the way it looks on a trellis diagram. Each
  * butterfly involves an Add-Compare-Select (ACS) operation on the two nodes
@@ -61,364 +56,146 @@ static short partial_metrics[64],partial_metrics_new[64];
  * would spill over into memory.
  */
 
-#define BUTTERFLY(i,sym) {											\
-		int m0,m1,m2,m3;											\
-		/* ACS for 0 branch */										\
-		m0 = state[i].metric + mets[sym];	/* 2*i */				\
-		m1 = state[i+32].metric + mets[3 ^ sym];	/* 2*i + 64 */	\
-		if(m0 > m1){												\
-			next[2*i].metric = m0;									\
-			next[2*i].path = state[i].path << 1;					\
-		} else {													\
-			next[2*i].metric = m1;									\
-			next[2*i].path = (state[i+32].path << 1)|1;				\
-		}															\
-		/* ACS for 1 branch */										\
-		m2 = state[i].metric + mets[3 ^ sym];	/* 2*i + 1 */		\
-		m3 = state[i+32].metric + mets[sym];	/* 2*i + 65 */		\
-		if(m2 > m3){												\
-			next[2*i+1].metric = m2;								\
-			next[2*i+1].path = state[i].path << 1;					\
-		} else {													\
-			next[2*i+1].metric = m3;								\
-			next[2*i+1].path = (state[i+32].path << 1)|1;			\
-		}															\
-	}
-
-
 using namespace gr::ieee802_11;
 
 
-soft_viterbi_decoder::soft_viterbi_decoder() :
-	d_store_pos(0) {
-}
+soft_viterbi_decoder::soft_viterbi_decoder() 
+{
+// populate d_ccodedot11_table : ccodedot11_init()
+	unsigned int  i, j, k, sum;
+	for (i = 0; i < 128; i++) 
+		{
+    			d_ccodedot11_table[i] = 0;
+			/* Compute R output bits */
+			for (j = 0; j < 2; j++) 
+    			{
+      				sum = 0;
+      				for (k = 0; k < 7; k++)
+        				if ((i & d_gdot11[j]) & (1 << k))
+          					sum++;
+			      		/* Write the sum modulo 2 in bit j */
+      					d_ccodedot11_table[i] |= (sum & 1) << j;
 
-soft_viterbi_decoder::~soft_viterbi_decoder() {
-}
-
-void
-soft_viterbi_decoder::viterbi_butterfly2_sse2(unsigned char *symbols,
-		__m128i *mm0, __m128i *mm1, __m128i *pp0, __m128i *pp1) {
-	int i;
-
-	__m128i *metric0, *metric1;
-	__m128i *path0, *path1;
-
-	metric0 = mm0;
-	path0 = pp0;
-	metric1 = mm1;
-	path1 = pp1;
-
-	// Operate on 4 symbols (2 bits) at a time
-
-	__m128i m0, m1, m2, m3, decision0, decision1, survivor0, survivor1;
-	__m128i metsv, metsvm;
-	__m128i shift0, shift1;
-	__m128i tmp0, tmp1;
-	__m128i sym0v, sym1v;
-
-	sym0v = _mm_set1_epi8(symbols[0]);
-	sym1v = _mm_set1_epi8(symbols[1]);
-
-	for (i = 0; i < 2; i++) {
-		if (symbols[0] == 2) {
-			metsvm = _mm_xor_si128(d_branchtab27_sse2[1].v[i],sym1v);
-			metsv = _mm_sub_epi8(_mm_set1_epi8(1),metsvm);
-		} else if (symbols[1] == 2) {
-			metsvm = _mm_xor_si128(d_branchtab27_sse2[0].v[i],sym0v);
-			metsv = _mm_sub_epi8(_mm_set1_epi8(1),metsvm);
-		} else {
-			metsvm = _mm_add_epi8(_mm_xor_si128(d_branchtab27_sse2[0].v[i],sym0v),_mm_xor_si128(d_branchtab27_sse2[1].v[i],sym1v));
-			metsv = _mm_sub_epi8(_mm_set1_epi8(2),metsvm);
+    			}
 		}
+//populate d_ccodedot11_table_rev : ccodedot11_init_inv() 
 
-		m0 = _mm_add_epi8(metric0[i], metsv);
-		m1 = _mm_add_epi8(metric0[i+2], metsvm);
-		m2 = _mm_add_epi8(metric0[i], metsvm);
-		m3 = _mm_add_epi8(metric0[i+2], metsv);
+	i = 0; j = 0; sum = 0;
+  	for (i = 0; i < 128; i++) 
+		{
+    			d_ccodedot11_table_rev[i] = 0;
+    			/* Compute R output bits */
+    			for (j = 0; j < 2; j++) 
+			{
+			      sum = 0;
+			      for (k = 0; k < 7; k++)
+        				if ((i & d_gdot11_rev[j]) & (1 << k))
+          					sum++;
+      					/* Write the sum modulo 2 in bit j */
+      					d_ccodedot11_table_rev[i] |= (sum & 1) << j;
+    			}
+  		}
 
-		decision0 = _mm_cmpgt_epi8(_mm_sub_epi8(m0,m1),_mm_setzero_si128());
-		decision1 = _mm_cmpgt_epi8(_mm_sub_epi8(m2,m3),_mm_setzero_si128());
-		survivor0 = _mm_or_si128(_mm_and_si128(decision0,m0),_mm_andnot_si128(decision0,m1));
-		survivor1 = _mm_or_si128(_mm_and_si128(decision1,m2),_mm_andnot_si128(decision1,m3));
 
-		shift0 = _mm_slli_epi16(path0[i], 1);
-		shift1 = _mm_slli_epi16(path0[2+i], 1);
-		shift1 = _mm_add_epi8(shift1, _mm_set1_epi8(1));
-
-		metric1[2*i] = _mm_unpacklo_epi8(survivor0,survivor1);
-		tmp0 = _mm_or_si128(_mm_and_si128(decision0,shift0),_mm_andnot_si128(decision0,shift1));
-
-		metric1[2*i+1] = _mm_unpackhi_epi8(survivor0,survivor1);
-		tmp1 = _mm_or_si128(_mm_and_si128(decision1,shift0),_mm_andnot_si128(decision1,shift1));
-
-		path1[2*i] = _mm_unpacklo_epi8(tmp0, tmp1);
-		path1[2*i+1] = _mm_unpackhi_epi8(tmp0, tmp1);
-	}
-
-	metric0 = mm1;
-	path0 = pp1;
-	metric1 = mm0;
-	path1 = pp0;
-
-	sym0v = _mm_set1_epi8(symbols[2]);
-	sym1v = _mm_set1_epi8(symbols[3]);
-
-	for (i = 0; i < 2; i++) {
-		if (symbols[2] == 2) {
-			metsvm = _mm_xor_si128(d_branchtab27_sse2[1].v[i],sym1v);
-			metsv = _mm_sub_epi8(_mm_set1_epi8(1),metsvm);
-
-		} else if (symbols[3] == 2) {
-			metsvm = _mm_xor_si128(d_branchtab27_sse2[0].v[i],sym0v);
-			metsv = _mm_sub_epi8(_mm_set1_epi8(1),metsvm);
-
-		} else {
-			metsvm = _mm_add_epi8(_mm_xor_si128(d_branchtab27_sse2[0].v[i],sym0v),_mm_xor_si128(d_branchtab27_sse2[1].v[i],sym1v));
-			metsv = _mm_sub_epi8(_mm_set1_epi8(2),metsvm);
-		}
-
-		m0 = _mm_add_epi8(metric0[i], metsv);
-		m1 = _mm_add_epi8(metric0[i+2], metsvm);
-		m2 = _mm_add_epi8(metric0[i], metsvm);
-		m3 = _mm_add_epi8(metric0[i+2], metsv);
-
-		decision0 = _mm_cmpgt_epi8(_mm_sub_epi8(m0,m1),_mm_setzero_si128());
-		decision1 = _mm_cmpgt_epi8(_mm_sub_epi8(m2,m3),_mm_setzero_si128());
-		survivor0 = _mm_or_si128(_mm_and_si128(decision0,m0),_mm_andnot_si128(decision0,m1));
-		survivor1 = _mm_or_si128(_mm_and_si128(decision1,m2),_mm_andnot_si128(decision1,m3));
-
-		shift0 = _mm_slli_epi16(path0[i], 1);
-		shift1 = _mm_slli_epi16(path0[2+i], 1);
-		shift1 = _mm_add_epi8(shift1, _mm_set1_epi8(1));
-
-		metric1[2*i] = _mm_unpacklo_epi8(survivor0,survivor1);
-		tmp0 = _mm_or_si128(_mm_and_si128(decision0,shift0),_mm_andnot_si128(decision0,shift1));
-
-		metric1[2*i+1] = _mm_unpackhi_epi8(survivor0,survivor1);
-		tmp1 = _mm_or_si128(_mm_and_si128(decision1,shift0),_mm_andnot_si128(decision1,shift1));
-
-		path1[2*i] = _mm_unpacklo_epi8(tmp0, tmp1);
-		path1[2*i+1] = _mm_unpackhi_epi8(tmp0, tmp1);
-	}
 }
 
-//  Find current best path
-unsigned char
-soft_viterbi_decoder::viterbi_get_output_sse2(__m128i *mm0, __m128i *pp0,
-		int ntraceback, unsigned char *outbuf) {
-	int i;
-	int bestmetric, minmetric;
-	int beststate = 0;
-	int pos = 0;
+soft_viterbi_decoder::~soft_viterbi_decoder() {}
 
-	// circular buffer with the last ntraceback paths
-	d_store_pos = (d_store_pos + 1) % ntraceback;
+static unsigned char d_inputs[64][4098]; 
+static unsigned short d_survivors[64][4098];
+static short d_partial_metrics[64],d_partial_metrics_new[64];
 
-	for (i = 0; i < 4; i++) {
-		_mm_store_si128((__m128i *) &d_mmresult[i*16], mm0[i]);
-		_mm_store_si128((__m128i *) &d_ppresult[d_store_pos][i*16], pp0[i]);
-	}
+void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n)
+{
 
-	// Find out the best final state
-	bestmetric = d_mmresult[beststate];
-	minmetric = d_mmresult[beststate];
+  /*  y is a pointer to the input
+      decoded_bytes is a pointer to the decoded output
+      n is the size in bits of the coded block, with the tail */
 
-	for (i = 1; i < 64; i++) {
-		if (d_mmresult[i] > bestmetric) {
-			bestmetric = d_mmresult[i];
-			beststate = i;
-		}
-		if (d_mmresult[i] < minmetric) {
-			minmetric = d_mmresult[i];
-		}
-	}
+  char *in = y;
+  short m0,m1,w[4],max_metric;
+  short position;
+  unsigned short prev_state0,prev_state1,state;
 
-	// Trace back
-	for (i = 0, pos = d_store_pos; i < (ntraceback - 1); i++) {
-		// Obtain the state from the output bits
-		// by clocking in the output bits in reverse order.
-		// The state has only 6 bits
-		beststate = d_ppresult[pos][beststate] >> 2;
-		pos = (pos - 1 + ntraceback) % ntraceback;
-	}
+  d_partial_metrics[0] = 0;
 
-	// Store output byte
-	*outbuf = d_ppresult[pos][beststate];
+  for (state=1; state<64; state++)
+    d_partial_metrics[state] = -127;
 
-	// Zero out the path variable
-	// and prevent metric overflow
-	for (i = 0; i < 4; i++) {
-		pp0[i] = _mm_setzero_si128();
-		mm0[i] = _mm_sub_epi8(mm0[i], _mm_set1_epi8(minmetric));
-	}
+  for (position=0; position<n; position++) {
 
-	return bestmetric;
+    //    printf("Channel Output %d = (%d,%d)\n",position,*in,*(in+1));
+
+    //        printf("%d %d\n",in[0],in[1]);
+
+    w[3] = in[0] + in[1];  // 1,1
+    w[0] = -w[3];          // -1,-1
+    w[1] = in[0] - in[1];  // -1, 1
+    w[2] = -w[1];          // 1 ,-1
+
+    max_metric = -127;
+
+    //    printf("w: %d %d %d %d\n",w[0],w[1],w[2],w[3]);
+    for (state=0; state<64 ; state++) {
+
+      // input 0
+      prev_state0 = (state<<1);
+      m0 = d_partial_metrics[prev_state0%64] + w[d_ccodedot11_table[prev_state0]];
+      /*
+      if (position < 8)
+      printf("%d,%d : prev_state0 = %d,m0 = %d,w=%d (%d)\n",position,state,prev_state0%64,m0,w[ccodedot11_table[prev_state0]],partial_metrics[prev_state0%64]);
+      */
+      // input 1
+      prev_state1 = (1+ (state<<1));
+      m1 = d_partial_metrics[prev_state1%64] + w[d_ccodedot11_table[prev_state1]];
+
+      /*
+      if (position <8)
+      printf("%d,%d : prev_state1 = %d,m1 = %d,w=%d (%d)\n",position,state,prev_state1%64,m1,w[ccodedot11_table[prev_state1]],partial_metrics[prev_state0%64]);
+      */
+      if (m0>m1) {
+        d_partial_metrics_new[state] = m0;
+        d_survivors[state][position] = prev_state0%64;
+        d_inputs[state][position] = (state>31) ? 1 : 0;
+
+        if (m0>max_metric)
+          max_metric = m0;
+      } else {
+        d_partial_metrics_new[state] = m1;
+        d_survivors[state][position] = prev_state1%64;
+        d_inputs[state][position] = (state>31) ? 1 : 0;
+
+        if (m1>max_metric)
+          max_metric = m1;
+      }
+
+    }
+
+    for (state=0 ; state<64; state++) {
+
+      d_partial_metrics[state] = d_partial_metrics_new[state]- max_metric;
+      //      printf("%d partial_metrics[%d] = %d\n",position,state,partial_metrics[state]);
+    }
+
+    in+=2;
+  }
+
+
+  // Traceback
+  prev_state0 = 0;
+
+  for (position = n-1 ; position>-1; position--) {
+
+    decoded_bytes[(position)>>3] += (d_inputs[prev_state0][position]<<(position%8));
+
+    //    if (position%8==0)
+    //      printf("%d\n",decoded_bytes[(position)>>3]);
+
+
+    prev_state0 = d_survivors[prev_state0][position];
+
+  }
+
+
 }
 
-uint8_t*
-soft_viterbi_decoder::depuncture(uint8_t *in) {
-
-	int count;
-	int n_cbps = d_ofdm->n_cbps;
-	uint8_t *depunctured;
-
-	if (d_ntraceback == 5) {
-		count = d_frame->n_sym * n_cbps;
-		depunctured = in;
-
-	} else {
-		depunctured = d_depunctured;
-		count = 0;
-		for(int i = 0; i < d_frame->n_sym; i++) {
-			for(int k = 0; k < n_cbps; k++) {
-				while (d_depuncture_pattern[count % (2 * d_k)] == 0) {
-					depunctured[count] = 2;
-					count++;
-				}
-
-				// Insert received bits
-				depunctured[count] = in[i * n_cbps + k];
-				count++;
-
-				while (d_depuncture_pattern[count % (2 * d_k)] == 0) {
-					depunctured[count] = 2;
-					count++;
-				}
-			}
-		}
-	}
-
-	return depunctured;
-}
-
-uint8_t*
-soft_viterbi_decoder::decode(ofdm_param *ofdm, frame_param *frame, uint8_t *in) {
-
-	d_ofdm = ofdm;
-	d_frame = frame;
-
-	reset();
-	uint8_t *depunctured = depuncture(in);
-
-	int in_count = 0;
-	int out_count = 0;
-	int n_decoded = 0;
-
-	while(n_decoded < d_frame->n_data_bits) {
-
-		if ((in_count % 4) == 0) { //0 or 3
-			viterbi_butterfly2_sse2(&depunctured[in_count & 0xfffffffc], d_metric0, d_metric1, d_path0, d_path1);
-
-			if ((in_count > 0) && (in_count % 16) == 8) { // 8 or 11
-				unsigned char c;
-
-				viterbi_get_output_sse2(d_metric0, d_path0, d_ntraceback, &c);
-
-				if (out_count >= d_ntraceback) {
-					for (int i= 0; i < 8; i++) {
-						d_decoded[(out_count - d_ntraceback) * 8 + i] = (c >> (7 - i)) & 0x1;
-						n_decoded++;
-					}
-				}
-				out_count++;
-			}
-		}
-		in_count++;
-	}
-
-	return d_decoded;
-}
-
-void
-soft_viterbi_decoder::reset() {
-
-	viterbi_chunks_init_sse2();
-
-	switch(d_ofdm->encoding) {
-	case BPSK_1_2:
-	case QPSK_1_2:
-	case QAM16_1_2:
-		d_ntraceback = 5;
-		d_depuncture_pattern = PUNCTURE_1_2;
-		d_k = 1;
-		break;
-	case QAM64_2_3:
-		d_ntraceback = 9;
-		d_depuncture_pattern = PUNCTURE_2_3;
-		d_k = 2;
-		break;
-	case BPSK_3_4:
-	case QPSK_3_4:
-	case QAM16_3_4:
-	case QAM64_3_4:
-		d_ntraceback = 10;
-		d_depuncture_pattern = PUNCTURE_3_4;
-		d_k = 3;
-		break;
-	}
-}
-
-void // Initialize starting metrics to prefer 0 state
-soft_viterbi_decoder::viterbi_chunks_init_sse2() {
-	int i, j;
-
-	for (i = 0; i < 4; i++) {
-		d_metric0[i] = _mm_setzero_si128();
-		d_path0[i] = _mm_setzero_si128();
-	}
-
-	int polys[2] = { 0x6d, 0x4f };
-	for(i=0; i < 32; i++) {
-		d_branchtab27_sse2[0].c[i] = (polys[0] < 0) ^ PARTAB[(2*i) & abs(polys[0])] ? 1 : 0;
-		d_branchtab27_sse2[1].c[i] = (polys[1] < 0) ^ PARTAB[(2*i) & abs(polys[1])] ? 1 : 0;
-	}
-
-	for (i = 0; i < 64; i++) {
-		d_mmresult[i] = 0;
-		for (j = 0; j < TRACEBACK_MAX; j++) {
-			d_ppresult[j][i] = 0;
-		}
-	}
-}
-
-
-/* Parity lookup table */
-const unsigned char soft_viterbi_decoder::PARTAB[256] = {
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	0, 1, 1, 0, 1, 0, 0, 1,
-	1, 0, 0, 1, 0, 1, 1, 0,
-};
-
-const unsigned char soft_viterbi_decoder::PUNCTURE_1_2[2] = {1, 1};
-const unsigned char soft_viterbi_decoder::PUNCTURE_2_3[4] = {1, 1, 1, 0};
-const unsigned char soft_viterbi_decoder::PUNCTURE_3_4[6] = {1, 1, 1, 0, 0, 1};

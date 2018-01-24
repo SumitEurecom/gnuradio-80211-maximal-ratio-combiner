@@ -18,6 +18,8 @@
 
 #include "utils.h"
 #include "viterbi_decoder.h"
+#include "soft_viterbi_decoder.h"
+//#include "soft_viterbi_decoder.h"
 
 #include <boost/crc.hpp>
 #include <gnuradio/io_signature.h>
@@ -139,6 +141,8 @@ void decode() {
 
 	deinterleave();
 	// TODO uint8_t *decoded = d_decoder.decode(&d_ofdm, &d_frame, d_deinterleaved_soft_bits);
+	float_llr_to_char_llr();
+	//d_soft_decoder.oai_decode(d_deinterleaved_soft_bits);
 	// TODO descramble(decoded);
 	//print_output();
 
@@ -187,6 +191,25 @@ void deinterleave() { // this shud work for all mods, no need to change I guess!
 		}
 	}
 }
+// routine to convert float llrs to char llrs
+void float_llr_to_char_llr()
+{
+//std::cout << "Im here Sumit" << std::endl;
+	for(int i = 0; i < 48*d_frame.n_sym ; i++)
+	{
+		if(d_deinterleaved_soft_bits[i] >= 1.0)
+			d_deinterleaved_soft_bits_char[i] = 127;
+		else if (d_deinterleaved_soft_bits[i] < -1.0)
+			d_deinterleaved_soft_bits_char[i] = -128;
+		else
+			d_deinterleaved_soft_bits_char[i] = (char)d_deinterleaved_soft_bits[i];
+                //std::cout << (char)d_deinterleaved_soft_bits_char[i] << std::endl;
+		//std::cout << (float)d_deinterleaved_soft_bits[i] << std::endl;
+	}
+}
+
+
+
 
 
 void descramble (uint8_t *decoded_bits) {
@@ -243,10 +266,12 @@ private:
 	double d_nom_freq;  // nominal frequency, Hz
 	double d_freq_offset;  // frequency offset, Hz
 	viterbi_decoder d_decoder; // an object of the class viterbi decoder
+	soft_viterbi_decoder d_soft_decoder;
 
 	float d_rx_soft_symbols[48 * MAX_SYM]; // float type to store llrs coming from ls_soft.cc
 	float d_rx_soft_bits[MAX_ENCODED_BITS]; // float type to store llrs to be fed to deinterleaver
 	float d_deinterleaved_soft_bits[MAX_ENCODED_BITS]; // float type to store deinterleaved llrs
+        char d_deinterleaved_soft_bits_char[MAX_ENCODED_BITS];
 	uint8_t out_bytes[MAX_PSDU_SIZE + 2]; 
 
 	int copied;

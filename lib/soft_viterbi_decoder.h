@@ -17,70 +17,36 @@
 #ifndef INCLUDED_IEEE802_11_SOFT_VITERBI_DECODER_H
 #define INCLUDED_IEEE802_11_SOFT_VITERBI_DECODER_H
 
-#include <xmmintrin.h>
-#include "utils.h"
-
 namespace gr {
 namespace ieee802_11 {
 
 // Maximum number of traceback bytes
 #define TRACEBACK_MAX 24
 
-/* This Viterbi decoder was taken from the gr-dvbt module of
- * GNU Radio. It is an SSE2 version of the Viterbi Decoder
- * created by Phil Karn. The SSE2 version was made by Bogdan
- * Diaconescu. For more info see: gr-dvbt/lib/d_viterbi.h
- */
 class soft_viterbi_decoder
 {
 public:
 
-	soft_viterbi_decoder();
-	virtual ~soft_viterbi_decoder();
+	soft_viterbi_decoder(); // constructor 
+	virtual ~soft_viterbi_decoder(); // destructor 
 
-	uint8_t* decode(ofdm_param *ofdm, frame_param *frame, uint8_t *in);
+//	uint8_t* decode(ofdm_param *ofdm, frame_param *frame, uint8_t *in);
+	void oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n);
+
+	unsigned char  d_ccodedot11_table[128]; // use std::vector 
+	unsigned char  d_ccodedot11_table_rev[128]; // use std::vector 
+//	static unsigned char d_inputs[64][4098]; 
+//	static unsigned short d_survivors[64][4098];
+//	static short d_partial_metrics[64],d_partial_metrics_new[64];
+
+
 
 private:
 
-	// Position in circular buffer where the current decoded byte is stored
-	int d_store_pos;
-	// Metrics for each state
-	unsigned char d_mmresult[64] __attribute__((aligned(16)));
-	// Paths for each state
-	unsigned char d_ppresult[TRACEBACK_MAX][64] __attribute__((aligned(16)));
-
-
-	union branchtab27 {
-		unsigned char c[32];
-		__m128i v[2];
-	} d_branchtab27_sse2[2];
-
-	__m128i d_metric0[4] __attribute__ ((aligned(16)));
-	__m128i d_metric1[4] __attribute__ ((aligned(16)));
-	__m128i d_path0[4] __attribute__ ((aligned(16)));
-	__m128i d_path1[4] __attribute__ ((aligned(16)));
-
-	int d_ntraceback;
-	int d_k;
-	ofdm_param *d_ofdm;
-	frame_param *d_frame;
-	const unsigned char *d_depuncture_pattern;
-
-	uint8_t d_depunctured[MAX_ENCODED_BITS];
-	uint8_t d_decoded[MAX_ENCODED_BITS * 3 / 4];
-
-	static const unsigned char PARTAB[256];
-	static const unsigned char PUNCTURE_1_2[2];
-	static const unsigned char PUNCTURE_2_3[4];
-	static const unsigned char PUNCTURE_3_4[6];
-
-	void reset();
-	uint8_t* depuncture(uint8_t *in);
-	void viterbi_chunks_init_sse2();
-	void viterbi_butterfly2_sse2(unsigned char *symbols,
-			__m128i m0[], __m128i m1[], __m128i p0[], __m128i p1[]);
-	unsigned char viterbi_get_output_sse2(__m128i *mm0,
-			__m128i *pp0, int ntraceback, unsigned char *outbuf);
+//	unsigned char  d_ccodedot11_table[128];
+//	unsigned char  d_ccodedot11_table_rev[128];
+	unsigned short d_gdot11[2] = { 0133, 0171 }; // {A,B} // use std::vector 
+	unsigned short d_gdot11_rev[2] = { 0155, 0117 }; // {A,B} // use std::vector 
 };
 
 } // namespace ieee802_11
