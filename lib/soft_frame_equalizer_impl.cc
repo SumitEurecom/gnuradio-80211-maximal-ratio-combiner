@@ -130,7 +130,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		// new frame
 		if(tags.size()) { // if got the tag wifi_start, time to decode SIGNAL field
 			d_current_symbol = 0; // counter index for parsing the symbols in the current frame
-			d_frame_symbols = 0; // it is total no of ofdm symbols in that frame, its populated after decoding SIGNAL field
+			d_frame_symbols = 0; // it is total no of data ofdm symbols in that frame, its populated after decoding SIGNAL field
 			d_frame_mod = d_bpsk; // SIGNAL field is bpsk
 
 			d_freq_offset_from_synclong = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI);
@@ -139,15 +139,16 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 			dout << "epsilon: " << d_epsilon0 << std::endl;
 		
-// this loop will be evaluated only once i.e. begining of the frame
+
 }
 
 		// not interesting -> skip
-		if(d_current_symbol > (d_frame_symbols + 2)) { 
+		if(d_current_symbol > (d_frame_symbols + 2)) { // d_frame_symbols + lts1 + lts2
+		//>std::cout << "skipping -- symInd--" << d_current_symbol << std::endl;
 			i++;
 			continue;
 		}
-
+                //>std::cout << "copy 64 samples to memory -- symInd--" << d_current_symbol << std::endl;
 		std::memcpy(current_symbol, in + i*64, 64*sizeof(gr_complex));
 
 		// compensate sampling offset
@@ -197,21 +198,22 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		}
 
 		// update estimate of residual frequency offset
-		if(d_current_symbol >= 2) {
+		if(d_current_symbol >= 2) { // i.e. when lts1, lts2 and SIGNAL field are already processed
 
 			double alpha = 0.1;
 			d_er = (1-alpha) * d_er + alpha * er;
 		}
 
 		// do equalization
+                //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
 				symbols, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
 
 		// signal field
-		if(d_current_symbol == 2) {
+		if(d_current_symbol == 2) { // 0 is lts1, 1 is lts2, 2 is SIGNAL
 
 			if(decode_signal_field(out + o * 48)) { // for test I will use hardbits for signal field
-
+			//>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
 				pmt::pmt_t dict = pmt::make_dict();
 				dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
 				dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
@@ -230,6 +232,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		}
 
 		if(d_current_symbol > 2) {
+                //>std::cout << "increasing output pointer--symind--" << d_current_symbol << std::endl;
 			o++;
 			pmt::pmt_t pdu = pmt::make_dict();
 			message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols)));
@@ -245,6 +248,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 
 bool
 soft_frame_equalizer_impl::decode_signal_field(uint8_t *rx_bits) {
+//>std::cout << "SIGNAL! -->" <<  d_current_symbol << std::endl;
 
 	static ofdm_param ofdm(BPSK_1_2);
 	static frame_param frame(ofdm, 0);

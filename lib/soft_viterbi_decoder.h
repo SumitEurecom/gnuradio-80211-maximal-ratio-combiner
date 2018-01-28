@@ -35,9 +35,12 @@ public:
 
 	unsigned char  d_ccodedot11_table[128]; // use std::vector 
 	unsigned char  d_ccodedot11_table_rev[128]; // use std::vector 
-//	static unsigned char d_inputs[64][4098]; 
-//	static unsigned short d_survivors[64][4098];
-//	static short d_partial_metrics[64],d_partial_metrics_new[64];
+	unsigned short d_gdot11[2] = { 0133, 0171 }; // {A,B} // use std::vector 
+	unsigned short d_gdot11_rev[2] = { 0155, 0117 }; // {A,B} // use std::vector
+	unsigned char d_inputs[64][4098]; // static ? prev in .cc file under the function defn 
+	unsigned short d_survivors[64][4098]; // static ? 
+	short d_partial_metrics[64],d_partial_metrics_new[64]; // static ? 
+
 
 
 
@@ -45,8 +48,7 @@ private:
 
 //	unsigned char  d_ccodedot11_table[128];
 //	unsigned char  d_ccodedot11_table_rev[128];
-	unsigned short d_gdot11[2] = { 0133, 0171 }; // {A,B} // use std::vector 
-	unsigned short d_gdot11_rev[2] = { 0155, 0117 }; // {A,B} // use std::vector 
+ 
 };
 
 } // namespace ieee802_11

@@ -131,6 +131,7 @@ void scramble(const char *in, char *out, frame_param &frame, char initial_state)
 
 	feedback = (!!(state & 64)) ^ (!!(state & 8));
 	out[i] = feedback ^ in[i];
+	//out[i] = in[i];
 	state = ((state << 1) & 0x7e) | feedback;
     }
 }

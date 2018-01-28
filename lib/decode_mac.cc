@@ -195,6 +195,7 @@ void descramble (uint8_t *decoded_bits) {
 	for(int i = 7; i < d_frame.psdu_size*8+16; i++) {
 		feedback = ((!!(state & 64))) ^ (!!(state & 8));
 		bit = feedback ^ (decoded_bits[i] & 0x1);
+		//bit = (decoded_bits[i] & 0x1);
 		out_bytes[i/8] |= bit << (i%8);
 		state = ((state << 1) & 0x7e) | feedback;
 	}

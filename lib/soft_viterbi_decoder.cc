@@ -61,56 +61,39 @@ using namespace gr::ieee802_11;
 
 soft_viterbi_decoder::soft_viterbi_decoder() 
 {
-// populate d_ccodedot11_table : ccodedot11_init()
-	unsigned int  i, j, k, sum;
-	for (i = 0; i < 128; i++) 
-		{
-    			d_ccodedot11_table[i] = 0;
-			/* Compute R output bits */
-			for (j = 0; j < 2; j++) 
-    			{
-      				sum = 0;
-      				for (k = 0; k < 7; k++)
-        				if ((i & d_gdot11[j]) & (1 << k))
-          					sum++;
-			      		/* Write the sum modulo 2 in bit j */
-      					d_ccodedot11_table[i] |= (sum & 1) << j;
+//std::cout << (unsigned short)d_d_gdot11[0] << " " << (unsigned short)d_d_gdot11[1] << std::endl;
+//std::cout << (unsigned short)d_d_gdot11_rev[0] << " " << (unsigned short)d_d_gdot11_rev[1] << std::endl;
+// populate d_d_ccodedot11_table : ccodedot11_init()
+{
+  unsigned int  i, j, k, sum;
 
-    			}
-		}
-//populate d_ccodedot11_table_rev : ccodedot11_init_inv() 
+  for (i = 0; i < 128; i++) {
+    d_ccodedot11_table[i] = 0;
 
-	i = 0; j = 0; sum = 0;
-  	for (i = 0; i < 128; i++) 
-		{
-    			d_ccodedot11_table_rev[i] = 0;
-    			/* Compute R output bits */
-    			for (j = 0; j < 2; j++) 
-			{
-			      sum = 0;
-			      for (k = 0; k < 7; k++)
-        				if ((i & d_gdot11_rev[j]) & (1 << k))
-          					sum++;
-      					/* Write the sum modulo 2 in bit j */
-      					d_ccodedot11_table_rev[i] |= (sum & 1) << j;
-    			}
-  		}
+    /* Compute R output bits */
+    for (j = 0; j < 2; j++) {
+      sum = 0;
 
+      for (k = 0; k < 7; k++)
+        if ((i & d_gdot11[j]) & (1 << k))
+          sum++;
 
+      /* Write the sum modulo 2 in bit j */
+      d_ccodedot11_table[i] |= (sum & 1) << j;
+    }
+  }
+}
 }
 
 soft_viterbi_decoder::~soft_viterbi_decoder() {}
 
-static unsigned char d_inputs[64][4098]; 
-static unsigned short d_survivors[64][4098];
-static short d_partial_metrics[64],d_partial_metrics_new[64];
-
 void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n)
 {
-
+//printf("here no simd\n");
   /*  y is a pointer to the input
       decoded_bytes is a pointer to the decoded output
       n is the size in bits of the coded block, with the tail */
+
 
   char *in = y;
   short m0,m1,w[4],max_metric;
@@ -143,7 +126,7 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
       m0 = d_partial_metrics[prev_state0%64] + w[d_ccodedot11_table[prev_state0]];
       /*
       if (position < 8)
-      printf("%d,%d : prev_state0 = %d,m0 = %d,w=%d (%d)\n",position,state,prev_state0%64,m0,w[ccodedot11_table[prev_state0]],partial_metrics[prev_state0%64]);
+      printf("%d,%d : prev_state0 = %d,m0 = %d,w=%d (%d)\n",position,state,prev_state0%64,m0,w[d_ccodedot11_table[prev_state0]],d_partial_metrics[prev_state0%64]);
       */
       // input 1
       prev_state1 = (1+ (state<<1));
@@ -151,7 +134,7 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
 
       /*
       if (position <8)
-      printf("%d,%d : prev_state1 = %d,m1 = %d,w=%d (%d)\n",position,state,prev_state1%64,m1,w[ccodedot11_table[prev_state1]],partial_metrics[prev_state0%64]);
+      printf("%d,%d : prev_state1 = %d,m1 = %d,w=%d (%d)\n",position,state,prev_state1%64,m1,w[d_ccodedot11_table[prev_state1]],d_partial_metrics[prev_state0%64]);
       */
       if (m0>m1) {
         d_partial_metrics_new[state] = m0;
@@ -174,7 +157,7 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
     for (state=0 ; state<64; state++) {
 
       d_partial_metrics[state] = d_partial_metrics_new[state]- max_metric;
-      //      printf("%d partial_metrics[%d] = %d\n",position,state,partial_metrics[state]);
+      //      printf("%d d_partial_metrics[%d] = %d\n",position,state,d_partial_metrics[state]);
     }
 
     in+=2;
@@ -198,4 +181,3 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
 
 
 }
-

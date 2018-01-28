@@ -96,10 +96,11 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 		}
 
 		if(copied < d_frame.n_sym) {
-			dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
+                        //std::cout << "came here" << std::endl;
+			//dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
 			std::memcpy(d_rx_soft_symbols + (copied * 48), in, 48*sizeof(float));
 			copied++;
-
+                
 			if(copied == d_frame.n_sym) {
 				dout << "received complete frame - decoding" << std::endl;
 		// at this point everything is copied in "d_rx_soft_symbols" now call decode function
@@ -109,7 +110,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 				in += 48;
 				i++;
 				d_frame_complete = true;
-				break;
+                                break;
 			}
 		}
 
@@ -128,23 +129,29 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 void decode() {
 
 	for(int i = 0; i < d_frame.n_sym * 48; i++) {
-		for(int k = 0; k < d_ofdm.n_bpsc; k++) { // n_bpsc = 1 for bpsk 
+		//for(int k = 0; k < d_ofdm.n_bpsc; k++) { // n_bpsc = 1 for bpsk 
 			//d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = !!(d_rx_soft_symbols[i] & (1 << k)); 
-			d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = d_rx_soft_symbols[i*d_ofdm.n_bpsc+k];
+			d_rx_soft_bits[i*d_ofdm.n_bpsc] = d_rx_soft_symbols[i*d_ofdm.n_bpsc];
                         //std::cout << d_rx_soft_bits[i*d_ofdm.n_bpsc+k] << std::endl;
                         // TODO above will work only for bpsk becz d_ofdm.n_bpsc = 1 for bpsk
-		}
+		//}
 	}
         // the above loops puts "d_rx_soft_symbols" into "d_rx_soft_bits" 
         // before calling viterbi, call the deinterleaver with input "d_rx_soft_bits"
 	// the output of deinterleaver is "d_deinterleaved_soft_bits" which is now the input for viterbi
 
 	deinterleave();
-	// TODO uint8_t *decoded = d_decoder.decode(&d_ofdm, &d_frame, d_deinterleaved_soft_bits);
-	float_llr_to_char_llr();
-	//d_soft_decoder.oai_decode(d_deinterleaved_soft_bits);
+	//uint8_t *decoded = d_decoder.decode(&d_ofdm, &d_frame, d_deinterleaved_soft_bits);
+	//float_llr_to_char_llr()
+	float_llr_to_char_temp();
+        //std::cout << "d_frame.n_sym*d_ofdm.n_dbps" << (int)d_frame.n_sym*d_ofdm.n_dbps << std::endl;
+	d_soft_decoder.oai_decode(d_deinterleaved_soft_bits_char,decoded_bytes,d_frame.n_sym*d_ofdm.n_dbps);
+	// d_deinterleaved_soft_bits_char is a pointer to the input (type is char *)
+	// decoded_bytes is a pointer to the decoded output (type is unsigned char *)
+	// n is the size in bits of the coded block, with the tail 
+	descramble(decoded_bytes);
 	// TODO descramble(decoded);
-	//print_output();
+	print_output();
 
 	// skip service field
 	boost::crc_32_type result;
@@ -188,26 +195,36 @@ void deinterleave() { // this shud work for all mods, no need to change I guess!
 	for(int i = 0; i < d_frame.n_sym; i++) {
 		for(int k = 0; k < n_cbps; k++) {
 			d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]] = d_rx_soft_bits[i * n_cbps + k];
+			//std::cout << "d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]]" << (float)d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]] << std::endl;
 		}
 	}
 }
 // routine to convert float llrs to char llrs
 void float_llr_to_char_llr()
 {
-//std::cout << "Im here Sumit" << std::endl;
+// std::cout << (int)(d_frame.n_data_bits) << std::endl;
 	for(int i = 0; i < 48*d_frame.n_sym ; i++)
 	{
 		if(d_deinterleaved_soft_bits[i] >= 1.0)
-			d_deinterleaved_soft_bits_char[i] = 127;
-		else if (d_deinterleaved_soft_bits[i] < -1.0)
-			d_deinterleaved_soft_bits_char[i] = -128;
+			d_deinterleaved_soft_bits_char[i] = 7; //127 
+		else if (d_deinterleaved_soft_bits[i] <= -1.0)
+			d_deinterleaved_soft_bits_char[i] = -8; // -127
 		else
-			d_deinterleaved_soft_bits_char[i] = (char)d_deinterleaved_soft_bits[i];
-                //std::cout << (char)d_deinterleaved_soft_bits_char[i] << std::endl;
-		//std::cout << (float)d_deinterleaved_soft_bits[i] << std::endl;
+			d_deinterleaved_soft_bits_char[i] = (char)(d_deinterleaved_soft_bits[i]);
+	        //std::cout << (int)d_deinterleaved_soft_bits_char[i] << std::endl;
 	}
 }
 
+void float_llr_to_char_temp()
+{
+// std::cout << (int)(d_frame.n_data_bits) << std::endl;
+	for(int i = 0; i < 48*d_frame.n_sym ; i++)
+	{
+		d_deinterleaved_soft_bits_char[i] = (char)(d_deinterleaved_soft_bits[i]);
+//d_deinterleaved_soft_bits_char[i] = -8;
+//std::cout << (int)d_deinterleaved_soft_bits_char[i] << " "<< (int)(d_deinterleaved_soft_bits[i]) << std::endl;
+	}
+}
 
 
 
@@ -223,13 +240,14 @@ void descramble (uint8_t *decoded_bits) {
 		}
 	}
 	out_bytes[0] = state;
-
+        //std::cout << "state " << (int)state << std::endl;
 	int feedback;
 	int bit;
 
 	for(int i = 7; i < d_frame.psdu_size*8+16; i++) {
 		feedback = ((!!(state & 64))) ^ (!!(state & 8));
 		bit = feedback ^ (decoded_bits[i] & 0x1);
+		//bit = (decoded_bits[i] & 0x1);
 		out_bytes[i/8] |= bit << (i%8);
 		state = ((state << 1) & 0x7e) | feedback;
 	}
@@ -271,8 +289,9 @@ private:
 	float d_rx_soft_symbols[48 * MAX_SYM]; // float type to store llrs coming from ls_soft.cc
 	float d_rx_soft_bits[MAX_ENCODED_BITS]; // float type to store llrs to be fed to deinterleaver
 	float d_deinterleaved_soft_bits[MAX_ENCODED_BITS]; // float type to store deinterleaved llrs
-        char d_deinterleaved_soft_bits_char[MAX_ENCODED_BITS];
+        char d_deinterleaved_soft_bits_char[MAX_ENCODED_BITS];// char type to store deinterleaved llrs
 	uint8_t out_bytes[MAX_PSDU_SIZE + 2]; 
+	unsigned char decoded_bytes[MAX_ENCODED_BITS * 3 / 4]; // ??? 
 
 	int copied;
 	bool d_frame_complete;

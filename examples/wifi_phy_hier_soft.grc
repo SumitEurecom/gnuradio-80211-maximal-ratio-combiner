@@ -1237,11 +1237,11 @@
     </param>
     <param>
       <key>debug</key>
-      <value>False</value>
+      <value>True</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1257,7 +1257,7 @@
     </param>
     <param>
       <key>log</key>
-      <value>False</value>
+      <value>True</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1292,66 +1292,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(104, 1044)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>ieee802_11_decode_mac_soft_0</value>
-    </param>
-    <param>
-      <key>log</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>ieee802_11_frame_equalizer</key>
-    <param>
-      <key>algo</key>
-      <value>chan_est</value>
-    </param>
-    <param>
-      <key>bw</key>
-      <value>bandwidth</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>debug</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>freq</key>
-      <value>frequency</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(776, 984)</value>
+      <value>(48, 908)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1359,7 +1300,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>ieee802_11_frame_equalizer_0</value>
+      <value>ieee802_11_decode_mac_soft_1</value>
     </param>
     <param>
       <key>log</key>
@@ -1672,7 +1613,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(56, 932)</value>
+      <value>(112, 1132)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2034,12 +1975,6 @@
   </connection>
   <connection>
     <source_block_id>fft_vxx_0_1</source_block_id>
-    <sink_block_id>ieee802_11_frame_equalizer_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>fft_vxx_0_1</source_block_id>
     <sink_block_id>ieee802_11_soft_frame_equalizer_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
@@ -2054,18 +1989,6 @@
     <source_block_id>ieee802_11_decode_mac_0</source_block_id>
     <sink_block_id>pad_sink_2</sink_block_id>
     <source_key>out</source_key>
-    <sink_key>in</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_frame_equalizer_0</source_block_id>
-    <sink_block_id>ieee802_11_decode_mac_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_frame_equalizer_0</source_block_id>
-    <sink_block_id>pad_sink_1</sink_block_id>
-    <source_key>symbols</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
@@ -2100,7 +2023,7 @@
   </connection>
   <connection>
     <source_block_id>ieee802_11_soft_frame_equalizer_0</source_block_id>
-    <sink_block_id>ieee802_11_decode_mac_soft_0</sink_block_id>
+    <sink_block_id>ieee802_11_decode_mac_soft_1</sink_block_id>
     <source_key>1</source_key>
     <sink_key>0</sink_key>
   </connection>

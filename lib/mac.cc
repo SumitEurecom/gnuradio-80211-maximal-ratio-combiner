@@ -141,6 +141,7 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, int *psdu_size) {
 		}
 	}
 	header.seq_nr = htole16(header.seq_nr);
+	//header.seq_nr = 0;
 	d_seq_nr++;
 
 	//header size is 24, plus 4 for FCS means 28 bytes

@@ -448,7 +448,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>10</value>
+      <value>1</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -618,6 +618,57 @@
     </param>
   </block>
   <block>
+    <key>blocks_head</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(832, 860)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_head_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>num_items</key>
+      <value>5000</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>blocks_message_strobe</key>
     <param>
       <key>alias</key>
@@ -653,7 +704,7 @@
     </param>
     <param>
       <key>msg</key>
-      <value>pmt.intern("".join("x" for i in range(pdu_length)))</value>
+      <value>pmt.intern("".join("1" for i in range(pdu_length)))</value>
     </param>
     <param>
       <key>minoutbuf</key>
@@ -684,11 +735,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(744, 740)</value>
+      <value>(424, 828)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -829,7 +880,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>epsilon</key>
@@ -904,7 +955,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(568, 712)</value>
+      <value>(576, 528)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -982,7 +1033,7 @@
     <key>ieee802_11_mac</key>
     <param>
       <key>bss_mac</key>
-      <value>[0xff, 0xff, 0xff, 0xff, 0xff, 0xff]</value>
+      <value>[0x00, 0x00, 0x00, 0x00, 0x00, 0x00]</value>
     </param>
     <param>
       <key>alias</key>
@@ -998,7 +1049,7 @@
     </param>
     <param>
       <key>dst_mac</key>
-      <value>[0x42, 0x42, 0x42, 0x42, 0x42, 0x42]</value>
+      <value>[0x00, 0x00, 0x00, 0x00, 0x00, 0x00]</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1026,7 +1077,7 @@
     </param>
     <param>
       <key>src_mac</key>
-      <value>[0x23, 0x23, 0x23, 0x23, 0x23, 0x23]</value>
+      <value>[0x00, 0x00, 0x00, 0x00, 0x00, 0x00]</value>
     </param>
   </block>
   <block>
@@ -1074,6 +1125,37 @@
     <param>
       <key>minoutbuf</key>
       <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>note</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(784, 584)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>note_0</value>
+    </param>
+    <param>
+      <key>note</key>
+      <value>Channel and scrambler is disabled</value>
     </param>
   </block>
   <block>
@@ -1745,7 +1827,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>wifi_phy_hier_0</value>
+      <value>wifi_phy_hier_soft_0</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1777,10 +1859,22 @@
     </param>
   </block>
   <connection>
+    <source_block_id>blocks_head_0</source_block_id>
+    <sink_block_id>pfb_arb_resampler_xxx_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_message_strobe_0</source_block_id>
     <sink_block_id>ieee802_11_mac_0</sink_block_id>
     <source_key>strobe</source_key>
     <sink_key>app in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_multiply_const_vxx_0</source_block_id>
+    <sink_block_id>blocks_head_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_multiply_const_vxx_0</source_block_id>
@@ -1808,6 +1902,12 @@
   </connection>
   <connection>
     <source_block_id>foo_packet_pad2_0</source_block_id>
+    <sink_block_id>blocks_head_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>foo_packet_pad2_0</source_block_id>
     <sink_block_id>blocks_multiply_const_vxx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
@@ -1820,7 +1920,7 @@
   </connection>
   <connection>
     <source_block_id>ieee802_11_mac_0</source_block_id>
-    <sink_block_id>wifi_phy_hier_0</sink_block_id>
+    <sink_block_id>wifi_phy_hier_soft_0</sink_block_id>
     <source_key>phy out</source_key>
     <sink_key>mac_in</sink_key>
   </connection>
@@ -1832,30 +1932,30 @@
   </connection>
   <connection>
     <source_block_id>pfb_arb_resampler_xxx_0</source_block_id>
-    <sink_block_id>wifi_phy_hier_0</sink_block_id>
+    <sink_block_id>wifi_phy_hier_soft_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>wifi_phy_hier_0</source_block_id>
+    <source_block_id>wifi_phy_hier_soft_0</source_block_id>
     <sink_block_id>blocks_pdu_to_tagged_stream_0_0</sink_block_id>
     <source_key>carrier</source_key>
     <sink_key>pdus</sink_key>
   </connection>
   <connection>
-    <source_block_id>wifi_phy_hier_0</source_block_id>
+    <source_block_id>wifi_phy_hier_soft_0</source_block_id>
     <sink_block_id>foo_wireshark_connector_0</sink_block_id>
     <source_key>mac_out</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
-    <source_block_id>wifi_phy_hier_0</source_block_id>
+    <source_block_id>wifi_phy_hier_soft_0</source_block_id>
     <sink_block_id>ieee802_11_parse_mac_0</sink_block_id>
     <source_key>mac_out</source_key>
     <sink_key>in</sink_key>
   </connection>
   <connection>
-    <source_block_id>wifi_phy_hier_0</source_block_id>
+    <source_block_id>wifi_phy_hier_soft_0</source_block_id>
     <sink_block_id>foo_packet_pad2_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>

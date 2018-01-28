@@ -25,14 +25,14 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 	
 	if(n == 0) 
 	{
-//std::cout << "n->" << n <<" interference->" << d_interference << " d_frame_symbols->" << d_frame_symbols << std::endl;
+//>std::cout <<"EQ copied input to d_H_soft --" << " symInd->" << n << std::endl;
 		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); // first lts copied in d_H
 
 	} 
 	else if(n == 1) 
 	{ // the second lts now 
 
-//imt = 1; // check point var, set in one section, to be accessed in another section during multiple calls of equalize_soft
+//>std::cout <<"EQ do chest now -- "<< " symInd->" << n << std::endl;
                 double signal = 0;
 		double noise = 0;
 		int start = 21; // start sub carrier of interference
@@ -103,6 +103,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 
 	} else { // from n = 2 onwards, data symbols are there
                 //std::cout << "new symbol " << std::endl;
+//>std::cout <<"EQ equalize and demap-- " <<" symInd->" << n << std::endl;
 		if(d_interference )
 		{
                 	if(n > 2)
@@ -121,7 +122,10 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) { // skip the pilots, zero padded subs and the dc, only equalize 48 data syms 
 				continue;
 			} else {
+				//std::cout << "EQ equalized for symInd -->" << n << std::endl;
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
+				//std::cout << "symbol" << symbols[c] << std::endl;
+				//std::cout << "EQ demap for symInd -->" << n << std::endl;
 				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
                                 //std::cout << "bits[c]" << (int)bits[c] << std::endl;
                                 if(d_interference){
@@ -129,8 +133,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
                                         //std::cout << llr[c] << std::endl;
 					}
 				else{ 
-					llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
-					//std::cout << llr[c] << std::endl;
+					//llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
+					llr[c] = bits[c] == 0 ? -8 : 7; // llr at high snr 
+//>std::cout << "symInd " << n-2 << " "<< (float)llr[c] << " " << (int)bits[c] << std::endl;
+//std::cout << n << ","<< (float)llr[c] << "," << (int)bits[c] << std::endl;
+
 				    }
 
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);

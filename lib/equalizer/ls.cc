@@ -41,11 +41,11 @@ void ls::equalize(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, boo
 
 		d_snr = 10 * std::log10(signal / noise / 2);
 
-	} else { // from n = 3 onwards, data symbols are there
+	} else { // from n = 2 onwards, data symbols are there + SIGNAL too ! 
 
 		int c = 0;
 		for(int i = 0; i < 64; i++) {
-			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) { // skip the pilots, zero padded subs and the dc, only equalize 48 daya syms 
+			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) { // skip the pilots, zero padded subs and the dc, only equalize 48 data syms 
 				continue;
 			} else {
 				symbols[c] = in[i] / d_H[i]; // equalize them with chest d_H
