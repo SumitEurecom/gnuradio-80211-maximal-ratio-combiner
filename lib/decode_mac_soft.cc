@@ -145,7 +145,24 @@ void decode() {
 	//float_llr_to_char_llr()
 	float_llr_to_char_temp();
         //std::cout << "d_frame.n_sym*d_ofdm.n_dbps" << (int)d_frame.n_sym*d_ofdm.n_dbps << std::endl;
-	d_soft_decoder.oai_decode(d_deinterleaved_soft_bits_char,decoded_bytes,d_frame.n_sym*d_ofdm.n_dbps);
+	memset(decoded_bytes,0,MAX_ENCODED_BITS * 3 / 4);
+        //for(int i = 0; i < 24; i++) 
+	//{
+	//printf("before decoded_bytes[%d],%x\n",i,decoded_bytes[i]);
+	//}
+        //for(int i = 0; i < 48; i++) 
+	//{
+//if(i %2 == 0)
+//	d_deinterleaved_soft_bits_char[i] = 4;
+//else
+//d_deinterleaved_soft_bits_char[i] = -3;
+//	printf("d_deinterleaved_soft_bits_char[%d],%d\n",i,d_deinterleaved_soft_bits_char[i]);
+//	}
+	d_soft_decoder.oai_decode(d_deinterleaved_soft_bits_char,decoded_bytes,24);
+//        for(int i = 0; i < 24; i++) 
+//	{
+//	printf("decoded_bytes[%d],%d\n",i,decoded_bytes[i]);
+//	}
 	// d_deinterleaved_soft_bits_char is a pointer to the input (type is char *)
 	// decoded_bytes is a pointer to the decoded output (type is unsigned char *)
 	// n is the size in bits of the coded block, with the tail 

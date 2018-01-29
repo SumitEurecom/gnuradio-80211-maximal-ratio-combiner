@@ -80,6 +80,7 @@ soft_viterbi_decoder::soft_viterbi_decoder()
 
       /* Write the sum modulo 2 in bit j */
       d_ccodedot11_table[i] |= (sum & 1) << j;
+      //printf("d_ccodedot11_table[%d],%d\n",i,d_ccodedot11_table[i]);
     }
   }
 }
@@ -89,6 +90,9 @@ soft_viterbi_decoder::~soft_viterbi_decoder() {}
 
 void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n)
 {
+
+//printf("n is %d\n", n);
+
 //printf("here no simd\n");
   /*  y is a pointer to the input
       decoded_bytes is a pointer to the decoded output
@@ -107,7 +111,7 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
 
   for (position=0; position<n; position++) {
 
-    //    printf("Channel Output %d = (%d,%d)\n",position,*in,*(in+1));
+//        printf("Channel Output %d = (%d,%d)\n",position,*in,*(in+1));
 
     //        printf("%d %d\n",in[0],in[1]);
 
@@ -118,7 +122,7 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
 
     max_metric = -127;
 
-    //    printf("w: %d %d %d %d\n",w[0],w[1],w[2],w[3]);
+        //printf("w: %d %d %d %d\n",w[0],w[1],w[2],w[3]);
     for (state=0; state<64 ; state++) {
 
       // input 0
@@ -157,27 +161,38 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
     for (state=0 ; state<64; state++) {
 
       d_partial_metrics[state] = d_partial_metrics_new[state]- max_metric;
-      //      printf("%d d_partial_metrics[%d] = %d\n",position,state,d_partial_metrics[state]);
+            //printf("%d d_partial_metrics[%d] = %d\n",position,state,d_partial_metrics[state]);
     }
 
     in+=2;
   }
 
-
+/*
+for(int i = 0; i < 64; i++)
+{
+for(int j = 0; j < 24; j++)
+{
+printf("%d,",d_inputs[i][j]);
+}
+printf("\n");
+}
+*/
   // Traceback
   prev_state0 = 0;
 
-  for (position = n-1 ; position>-1; position--) {
-
+  for (position = n-1 ; position>-1; position--) 
+{
+//    printf("prev_state0-%d, position-%d\n",prev_state0, position);
     decoded_bytes[(position)>>3] += (d_inputs[prev_state0][position]<<(position%8));
-
-    //    if (position%8==0)
-    //      printf("%d\n",decoded_bytes[(position)>>3]);
+//    printf("pos %d,%d\n",decoded_bytes[(position)>>3],(position%8));
+ //      if (position%8==0)
+   //       printf("%d\n",decoded_bytes[(position)>>3]);
 
 
     prev_state0 = d_survivors[prev_state0][position];
 
   }
+
 
 
 }
