@@ -1237,7 +1237,7 @@
     </param>
     <param>
       <key>debug</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1245,7 +1245,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 1124)</value>
+      <value>(368, 1052)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1257,7 +1257,7 @@
     </param>
     <param>
       <key>log</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -1292,7 +1292,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(48, 908)</value>
+      <value>(240, 940)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1613,7 +1613,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(112, 1132)</value>
+      <value>(64, 1036)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1986,7 +1986,7 @@
     <sink_key>1</sink_key>
   </connection>
   <connection>
-    <source_block_id>ieee802_11_decode_mac_0</source_block_id>
+    <source_block_id>ieee802_11_decode_mac_soft_1</source_block_id>
     <sink_block_id>pad_sink_2</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in</sink_key>
