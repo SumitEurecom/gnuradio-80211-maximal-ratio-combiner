@@ -22,6 +22,7 @@
 #include <ieee802-11/constellations.h>
 #include "equalizer/base_soft.h"
 #include "viterbi_decoder.h"
+#include "soft_viterbi_decoder.h"
 
 namespace gr {
 namespace ieee802_11 {
@@ -48,7 +49,10 @@ private:
 
 	bool parse_signal(uint8_t *signal);
 	bool decode_signal_field(uint8_t *rx_bits);
+	bool s_decode_signal_field(float *rx_scaled_llr); // rx_scaled_llr are coming from ls_soft.cc
+
 	void deinterleave(uint8_t *rx_bits);
+	void s_deinterleave(float *rx_scaled_llr);
 
 	equalizer_soft::base_soft *d_equalizer;
 	gr::thread::mutex d_mutex;
@@ -57,6 +61,7 @@ private:
 	bool d_log;
 	int  d_current_symbol;
 	viterbi_decoder d_decoder;
+	soft_viterbi_decoder s_decoder; // soft decision decoder 
 
 	// freq offset
 	double d_freq;  // Hz
@@ -71,6 +76,9 @@ private:
 	int  d_frame_encoding;
 
 	uint8_t d_deinterleaved[48];
+	char s_deinterleaved[48];
+	unsigned char s_decoded_bytes[3];// becz oai decoder writes 1 bit in 1 bit field
+	uint8_t s_decoded[24]; // becz GR writes 1 bit in 1 byte field: only for signal field 24 bits 
 	gr_complex symbols[48];
 
 	boost::shared_ptr<gr::digital::constellation> d_frame_mod;

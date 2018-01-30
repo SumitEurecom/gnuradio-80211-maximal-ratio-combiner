@@ -125,7 +125,6 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				//std::cout << "EQ equalized for symInd -->" << n << std::endl;
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
 				//std::cout << "symbol" << symbols[c] << std::endl;
-				//std::cout << "EQ demap for symInd -->" << n << std::endl;
 				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
                                 //std::cout << "bits[c]" << (int)bits[c] << std::endl;
                                 if(d_interference){
@@ -134,10 +133,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 					}
 				else{ 
 					//llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
-					llr[c] = bits[c] == 0 ? -8 : 7; // llr at high snr 
-//>std::cout << "symInd " << n-2 << " "<< (float)llr[c] << " " << (int)bits[c] << std::endl;
-//std::cout << n << ","<< (float)llr[c] << "," << (int)bits[c] << std::endl;
-
+					/*check point 1 ,,at low snr these will be float*/
+					//llr[c] = bits[c] == 0 ? -8 : 7; // llr at high snr 
+                                          llr[c] = (4*real(symbols[c]));
+//>std::cout << "symInd, " << n-2 << ","<< (float)llr[c] << "," << (int)bits[c] << std::endl;
+				//std::cout << "llrs," << (float)(-4*real(symbols[c])) << std::endl;
 				    }
 
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);

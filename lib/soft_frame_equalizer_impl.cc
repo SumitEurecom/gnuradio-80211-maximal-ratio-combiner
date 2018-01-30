@@ -23,7 +23,8 @@
 //#include "equalizer/sta.h"
 #include "utils.h"
 #include <gnuradio/io_signature.h>
-
+//#define llr_out_from_equalizer
+//#define s_decode_signal_field
 namespace gr {
 namespace ieee802_11 {
 
@@ -207,19 +208,37 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		// do equalization
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols); // d_frame_mod is the type of constellation object, chosen based on decoding of signal field
+				symbols, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+/*check point-2*/
+#ifdef llr_out_from_equalizer
+if(d_current_symbol == 2)
+{
+for(int i = 0; i < 48; i++)
+{
+std::cout << "llr," << i << "," << (float)(out1+o)[i] << "," << (int)(out+o)[i]<< std::endl;  
+ // the out1 got float vals of my scaled llrs
+}
+}
+std::cout << "----------------" << std::endl;
+#endif
+
+
 
 		// signal field
 		if(d_current_symbol == 2) { // 0 is lts1, 1 is lts2, 2 is SIGNAL
-
-			if(decode_signal_field(out + o * 48)) { // for test I will use hardbits for signal field
-			//>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
-				pmt::pmt_t dict = pmt::make_dict();
-				dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
-				dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
-				dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_soft()));
-				dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
-				dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
+		//s_decode_signal_field(out1 + o * 48);
+		if(s_decode_signal_field(out1 + o * 48)) 
+		//if(decode_signal_field(out + o * 48)) 
+			   
+		{
+ 
+ //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
+			pmt::pmt_t dict = pmt::make_dict();
+			dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
+			dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
+			dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_soft()));
+			dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
+			dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
 				add_item_tag(0, nitems_written(0) + o,
 						pmt::string_to_symbol("wifi_start"),
 						dict,
@@ -259,10 +278,67 @@ soft_frame_equalizer_impl::decode_signal_field(uint8_t *rx_bits) {
 	return parse_signal(decoded_bits);
 }
 
+bool
+soft_frame_equalizer_impl::s_decode_signal_field(float *rx_scaled_llr) {
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "fllr," << i << "," << (int)(rx_scaled_llr)[i] << "," << (int)(rx_bits)[i]<< std::endl;  
+	}
+*/
+
+	s_deinterleave(rx_scaled_llr);
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "dlv," << i << "," << (int)(s_deinterleaved)[i] << "," << (int)(d_deinterleaved)[i]<< std::endl;  
+	}
+*/
+	memset(s_decoded_bytes,0,24*sizeof(char));
+        s_decoder.oai_decode(s_deinterleaved,s_decoded_bytes,24);
+
+	for(int i = 0; i < 3; i++)
+	{
+		std::cout << "s_decoded_bytes," <<(int)s_decoded_bytes[i]<< std::endl;
+	}
+
+        for(int i = 0; i < 8; i++)
+	{
+		s_decoded[7-i] = (s_decoded_bytes[0] >> (7-i)) & 0x01;
+		s_decoded[7-i+8] = (s_decoded_bytes[1] >> (7-i)) & 0x01;
+ 		s_decoded[7-i+16] = (s_decoded_bytes[2] >> (7-i)) & 0x01;
+	}
+
+//for(int i = 0; i < 24; i++)
+//{
+//std::cout << "signal bits," << (int)s_decoded[i] << std::endl;
+//}
+
+	return parse_signal(s_decoded);
+	//return true;	
+
+}
+
 void
 soft_frame_equalizer_impl::deinterleave(uint8_t *rx_bits) {
 	for(int i = 0; i < 48; i++) {
 		d_deinterleaved[i] = rx_bits[interleaver_pattern[i]];
+		//{std::cout << "gr,"<<(int)d_deinterleaved[i] << std::endl;}
+	}
+}
+
+void
+soft_frame_equalizer_impl::s_deinterleave(float *rx_scaled_llr) {
+//TODO here convert the float llr to char llr lying from -8 to 7
+	for(int i = 0; i < 48; i++) {
+                if(rx_scaled_llr[i] > 7) 
+		rx_scaled_llr[i] = 7;
+		else if (rx_scaled_llr[i] < -8)
+  		rx_scaled_llr[i] = -8;
+		else
+		rx_scaled_llr[i] = (char)rx_scaled_llr[i];
+		s_deinterleaved[i] = rx_scaled_llr[interleaver_pattern[i]]; // is this correct to typecast here
+		//{std::cout << "oai,"<<(int)s_deinterleaved[i] << std::endl;}
 	}
 }
 
@@ -273,8 +349,9 @@ soft_frame_equalizer_impl::parse_signal(uint8_t *decoded_bits) {
 	d_frame_bytes = 0;
 	bool parity = false;
 	for(int i = 0; i < 17; i++) {
+                //std::cout << "decoded_bits," << (int)decoded_bits[i] << std::endl;
 		parity ^= decoded_bits[i];
-
+		
 		if((i < 4) && decoded_bits[i]) {
 			r = r | (1 << i);
 		}
@@ -286,6 +363,7 @@ soft_frame_equalizer_impl::parse_signal(uint8_t *decoded_bits) {
 
 	if(parity != decoded_bits[17]) {
 		dout << "SIGNAL: wrong parity" << std::endl;
+		//std::cout << "SIGNAL: wrong parity" << std::endl;
 		return false;
 	}
 
@@ -296,6 +374,7 @@ soft_frame_equalizer_impl::parse_signal(uint8_t *decoded_bits) {
                 //std::cout << d_frame_symbols << std::endl;
 		d_frame_mod = d_bpsk;
 		dout << "Encoding: 3 Mbit/s   ";
+		std::cout << "here !" << std::endl;
 		break;
 	case 15:
 		d_frame_encoding = 1;

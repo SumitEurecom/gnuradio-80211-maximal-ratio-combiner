@@ -84,6 +84,27 @@ soft_viterbi_decoder::soft_viterbi_decoder()
     }
   }
 }
+
+{
+  unsigned int  i, j, k, sum;
+
+  for (i = 0; i < 128; i++) {
+    d_ccodedot11_table_rev[i] = 0;
+
+    /* Compute R output bits */
+    for (j = 0; j < 2; j++) {
+      sum = 0;
+
+      for (k = 0; k < 7; k++)
+        if ((i & d_gdot11_rev[j]) & (1 << k))
+          sum++;
+
+      /* Write the sum modulo 2 in bit j */
+      d_ccodedot11_table_rev[i] |= (sum & 1) << j;
+    }
+  }
+}
+
 }
 
 soft_viterbi_decoder::~soft_viterbi_decoder() {}
