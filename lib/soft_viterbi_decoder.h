@@ -31,14 +31,14 @@ public:
 	virtual ~soft_viterbi_decoder(); // destructor 
 
 //	uint8_t* decode(ofdm_param *ofdm, frame_param *frame, uint8_t *in);
-	void oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n);
+	void oai_decode(char *y,unsigned char *decoded_bytes,unsigned char *decoded_bits,unsigned short n);
 
 	unsigned char  d_ccodedot11_table[128]; // use std::vector 
 	unsigned char  d_ccodedot11_table_rev[128]; // use std::vector 
 	unsigned short d_gdot11[2] = { 0133, 0171 }; // {A,B} // use std::vector 
 	unsigned short d_gdot11_rev[2] = { 0155, 0117 }; // {A,B} // use std::vector
-	unsigned char d_inputs[64][4098]; // static ? prev in .cc file under the function defn 
-	unsigned short d_survivors[64][4098]; // static ? 
+	unsigned char d_inputs[64][12264] = {}; // static ? prev in .cc file under the function defn 
+	unsigned short d_survivors[64][12264] = {}; // static ? 
 	short d_partial_metrics[64],d_partial_metrics_new[64]; // static ? 
 
 

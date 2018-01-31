@@ -15,12 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <ieee802-11/decode_mac_soft.h>
-
+#include <fstream>
 #include "utils.h"
 #include "viterbi_decoder.h"
 #include "soft_viterbi_decoder.h"
-//#include "soft_viterbi_decoder.h"
-
 #include <boost/crc.hpp>
 #include <gnuradio/io_signature.h>
 
@@ -61,11 +59,11 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 	dout << "Decode MAC: input " << ninput_items[0] << std::endl;
 
 	while(i < ninput_items[0]) {
-                //std::cout << "searching" << std::endl;
-		get_tags_in_range(tags, 0, nread + i, nread + i + 1, // find the moment when wifi starts
+                
+		get_tags_in_range(tags, 0, nread + i, nread + i + 1, 
 			pmt::string_to_symbol("wifi_start"));
 
-		if(tags.size()) { // if "wifi_start" tag found
+		if(tags.size()) { 
 			if (d_frame_complete == false) {
 				dout << "Warning: starting to receive new frame before old frame was complete" << std::endl;
 				dout << "Already copied " << copied << " out of " << d_frame.n_sym << " symbols of last frame" << std::endl;
@@ -82,7 +80,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 			ofdm_param ofdm = ofdm_param((Encoding)encoding);
 			frame_param frame = frame_param(ofdm, len_data);
 
-			// check for maximum frame size
+			
 			if(frame.n_sym <= MAX_SYM && frame.psdu_size <= MAX_PSDU_SIZE) {
 				d_ofdm = ofdm;
 				d_frame = frame;
@@ -96,8 +94,8 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 		}
 
 		if(copied < d_frame.n_sym) {
-                        //std::cout << "came here" << std::endl;
-			//dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
+                        
+			dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
 			std::memcpy(d_rx_soft_symbols + (copied * 48), in, 48*sizeof(float));
 			copied++;
                 
@@ -105,8 +103,9 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 				dout << "received complete frame - decoding" << std::endl;
 		// at this point everything is copied in "d_rx_soft_symbols" now call decode function
                 // input to decode() is "d_rx_soft_symbols"
-                                //std::cout << "came here" << std::endl;
-				decode();
+                                
+				oai_decode();
+				//decode(); // GNU Radio Viterbi Decoder
 				in += 48;
 				i++;
 				d_frame_complete = true;
@@ -123,85 +122,69 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 	return 0;
 }
 
+void oai_decode()
+{
+        //std::ofstream myfile;
+	//myfile.open ("/home/john/myBUG.csv");
+	for(int i = 0; i < d_frame.n_sym * 48; i++) 
+	{
+		if(d_rx_soft_symbols[i*d_ofdm.n_bpsc] >7)
+			d_rx_soft_symbols[i*d_ofdm.n_bpsc] = 7;
+		else if (d_rx_soft_symbols[i*d_ofdm.n_bpsc] < -8)
+			d_rx_soft_symbols[i*d_ofdm.n_bpsc] = -8;
+		else		
+			d_rx_soft_symbols[i*d_ofdm.n_bpsc] = (char)d_rx_soft_symbols[i*d_ofdm.n_bpsc];
 
-
-
-void decode() {
-
-	for(int i = 0; i < d_frame.n_sym * 48; i++) {
-		//for(int k = 0; k < d_ofdm.n_bpsc; k++) { // n_bpsc = 1 for bpsk 
-			//d_rx_soft_bits[i*d_ofdm.n_bpsc + k] = !!(d_rx_soft_symbols[i] & (1 << k)); 
-			d_rx_soft_bits[i*d_ofdm.n_bpsc] = d_rx_soft_symbols[i*d_ofdm.n_bpsc];
-                        //std::cout << d_rx_soft_bits[i*d_ofdm.n_bpsc+k] << std::endl;
-                        // TODO above will work only for bpsk becz d_ofdm.n_bpsc = 1 for bpsk
-		//}
+		d_rx_soft_bits[i*d_ofdm.n_bpsc] = d_rx_soft_symbols[i*d_ofdm.n_bpsc];
+		//myfile <<(int)d_rx_soft_bits[i*d_ofdm.n_bpsc] << ","<<std::endl;		
 	}
-        // the above loops puts "d_rx_soft_symbols" into "d_rx_soft_bits" 
-        // before calling viterbi, call the deinterleaver with input "d_rx_soft_bits"
-	// the output of deinterleaver is "d_deinterleaved_soft_bits" which is now the input for viterbi
+	//myfile.close();
+  		
+        gnu_deinterleave();
+	memset(oai_decoded_bytes,0,sizeof(oai_decoded_bytes)); // check point ! 
+	memset(oai_decoded_bits,0,sizeof(oai_decoded_bits)); // check point ! 
 
-	deinterleave();
-	//uint8_t *decoded = d_decoder.decode(&d_ofdm, &d_frame, d_deinterleaved_soft_bits);
-	//float_llr_to_char_llr()
-	float_llr_to_char_temp();
-        //std::cout << "d_frame.n_sym*d_ofdm.n_dbps" << (int)d_frame.n_sym*d_ofdm.n_dbps << std::endl;
-	memset(decoded_bytes,0,MAX_ENCODED_BITS * 3 / 4);
-        //for(int i = 0; i < 24; i++) 
+s_decoder.oai_decode(d_deinterleaved_soft_bits,oai_decoded_bytes,oai_decoded_bits, d_ofdm.n_dbps*d_frame.n_sym);
+//std::cout << "yo yo " << std::endl;
+        //std::ofstream myfile;
+        //myfile.open ("/home/john/OAIVITIBIT.csv");
+	//for(int i = 0; i < 264; i++)
 	//{
-	//printf("before decoded_bytes[%d],%x\n",i,decoded_bytes[i]);
+	//	myfile << (int)oai_decoded_bits[i] << "," << std::endl;
 	//}
-        //for(int i = 0; i < 48; i++) 
+	//myfile.close();
+        //myfile.open ("/home/john/OAIVITIBYTE.csv");
+	//for(int i = 0; i < 33; i++)
 	//{
-//if(i %2 == 0)
-//	d_deinterleaved_soft_bits_char[i] = 4;
-//else
-//d_deinterleaved_soft_bits_char[i] = -3;
-//	printf("d_deinterleaved_soft_bits_char[%d],%d\n",i,d_deinterleaved_soft_bits_char[i]);
-//	}
-	d_soft_decoder.oai_decode(d_deinterleaved_soft_bits_char,decoded_bytes,24);
-//        for(int i = 0; i < 24; i++) 
-//	{
-//	printf("decoded_bytes[%d],%d\n",i,decoded_bytes[i]);
-//	}
-	// d_deinterleaved_soft_bits_char is a pointer to the input (type is char *)
-	// decoded_bytes is a pointer to the decoded output (type is unsigned char *)
-	// n is the size in bits of the coded block, with the tail 
-	descramble(decoded_bytes);
-	// TODO descramble(decoded);
-	print_output();
+	//	myfile << (int)oai_decoded_bytes[i] << "," << std::endl;
+	//}
+	//myfile.close();
 
+	descramble_gnu(oai_decoded_bits);
+	//descramble(oai_decoded_bytes, d_frame.psdu_size);
+
+	gnu_print_output();
+//std::cout << "here" << std::endl;
 	// skip service field
 	boost::crc_32_type result;
-	result.process_bytes(out_bytes + 2, d_frame.psdu_size);
+	result.process_bytes(oai_out_bytes + 2, d_frame.psdu_size);
 	if(result.checksum() != 558161692) {
-		dout << "checksum wrong -- dropping" << std::endl;
+		dout << "grrr checksum wrong -- dropping" << std::endl;
 		return;
 	}
-
-	mylog(boost::format("encoding: %1% - length: %2% - symbols: %3%")
-			% d_ofdm.encoding % d_frame.psdu_size % d_frame.n_sym);
-
-	// create PDU
-	pmt::pmt_t blob = pmt::make_blob(out_bytes + 2, d_frame.psdu_size - 4);
-	pmt::pmt_t enc = pmt::from_uint64(d_ofdm.encoding);
-	pmt::pmt_t dict = pmt::make_dict();
-	dict = pmt::dict_add(dict, pmt::mp("encoding"), enc);
-	dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_snr));
-	dict = pmt::dict_add(dict, pmt::mp("nomfreq"), pmt::from_double(d_nom_freq));
-	dict = pmt::dict_add(dict, pmt::mp("freqofs"), pmt::from_double(d_freq_offset));
-	dict = pmt::dict_add(dict, pmt::mp("dlt"), pmt::from_long(LINKTYPE_IEEE802_11));
-	message_port_pub(pmt::mp("out"), pmt::cons(dict, blob));
+	
 }
 
-void deinterleave() { // this shud work for all mods, no need to change I guess! 
 
-	int n_cbps = d_ofdm.n_cbps; // for bpsk it is 48 
-	int first[n_cbps]; // all elements will be int, dont change the type 
-	int second[n_cbps]; // all elements will be int, dont change the type
-	int s = std::max(d_ofdm.n_bpsc / 2, 1); // for bpsk its 1
+void gnu_deinterleave() {
+
+	int n_cbps = d_ofdm.n_cbps;
+	int first[n_cbps];
+	int second[n_cbps];
+	int s = std::max(d_ofdm.n_bpsc / 2, 1);
 
 	for(int j = 0; j < n_cbps; j++) {
-		first[j] = s * (j / s) + ((j + int(floor(16.0 * j / n_cbps))) % s); 
+		first[j] = s * (j / s) + ((j + int(floor(16.0 * j / n_cbps))) % s);
 	}
 
 	for(int i = 0; i < n_cbps; i++) {
@@ -209,87 +192,67 @@ void deinterleave() { // this shud work for all mods, no need to change I guess!
 	}
 
 	int count = 0;
+	//std::ofstream afile;
+	//afile.open ("/home/john/OAIInterleave.csv");
 	for(int i = 0; i < d_frame.n_sym; i++) {
 		for(int k = 0; k < n_cbps; k++) {
 			d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]] = d_rx_soft_bits[i * n_cbps + k];
-			//std::cout << "d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]]" << (float)d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]] << std::endl;
+	//afile <<(int)d_deinterleaved_soft_bits[i * n_cbps + second[first[k]]] << ","<<std::endl;
 		}
 	}
-}
-// routine to convert float llrs to char llrs
-void float_llr_to_char_llr()
-{
-// std::cout << (int)(d_frame.n_data_bits) << std::endl;
-	for(int i = 0; i < 48*d_frame.n_sym ; i++)
-	{
-		if(d_deinterleaved_soft_bits[i] >= 1.0)
-			d_deinterleaved_soft_bits_char[i] = 7; //127 
-		else if (d_deinterleaved_soft_bits[i] <= -1.0)
-			d_deinterleaved_soft_bits_char[i] = -8; // -127
-		else
-			d_deinterleaved_soft_bits_char[i] = (char)(d_deinterleaved_soft_bits[i]);
-	        //std::cout << (int)d_deinterleaved_soft_bits_char[i] << std::endl;
-	}
+//afile.close();
+//std::cout << "oai" << std::endl;
 }
 
-void float_llr_to_char_temp()
-{
-// std::cout << (int)(d_frame.n_data_bits) << std::endl;
-	for(int i = 0; i < 48*d_frame.n_sym ; i++)
-	{
-		d_deinterleaved_soft_bits_char[i] = (char)(d_deinterleaved_soft_bits[i]);
-//d_deinterleaved_soft_bits_char[i] = -8;
-//std::cout << (int)d_deinterleaved_soft_bits_char[i] << " "<< (int)(d_deinterleaved_soft_bits[i]) << std::endl;
-	}
-}
-
-
-
-
-void descramble (uint8_t *decoded_bits) {
+void descramble_gnu (uint8_t *oai_decoded_bits) {
 
 	int state = 0;
-	std::memset(out_bytes, 0, d_frame.psdu_size+2);
-
+	std::memset(oai_out_bytes, 0, d_frame.psdu_size+2);
+	//std::ofstream afile;
+	//afile.open ("/home/john/OAIDS.csv");
 	for(int i = 0; i < 7; i++) {
-		if(decoded_bits[i]) {
+		if(oai_decoded_bits[i]) {
 			state |= 1 << (6 - i);
 		}
 	}
-	out_bytes[0] = state;
-        //std::cout << "state " << (int)state << std::endl;
+	oai_out_bytes[0] = state;
+
 	int feedback;
 	int bit;
-
+//std::cout << "d_frame.psdu_size*8+16" << (int)d_frame.psdu_size*8+16 << std::endl;
 	for(int i = 7; i < d_frame.psdu_size*8+16; i++) {
 		feedback = ((!!(state & 64))) ^ (!!(state & 8));
-		bit = feedback ^ (decoded_bits[i] & 0x1);
+		bit = feedback ^ (oai_decoded_bits[i] & 0x1);
 		//bit = (decoded_bits[i] & 0x1);
-		out_bytes[i/8] |= bit << (i%8);
+		oai_out_bytes[i/8] |= bit << (i%8);
+	//	afile <<(int)bit << ","<<std::endl;
+	//	std::cout << "oai,"<<(int)(i/8) << std::endl;
 		state = ((state << 1) & 0x7e) | feedback;
 	}
+	//afile.close();
 }
 
-void print_output() {
+void gnu_print_output() {
 
 	dout << std::endl;
-	dout << "psdu size" << d_frame.psdu_size << std::endl;
+	dout << "The psdu size" << d_frame.psdu_size << std::endl;
 	for(int i = 2; i < d_frame.psdu_size+2; i++) {
-		dout << std::setfill('0') << std::setw(2) << std::hex << ((unsigned int)out_bytes[i] & 0xFF) << std::dec << " ";
+		dout << std::setfill('0') << std::setw(2) << std::hex << ((unsigned int)oai_out_bytes[i] & 0xFF) << std::dec << " ";
 		if(i % 16 == 15) {
 			dout << std::endl;
 		}
 	}
 	dout << std::endl;
 	for(int i = 2; i < d_frame.psdu_size+2; i++) {
-		if((out_bytes[i] > 31) && (out_bytes[i] < 127)) {
-			dout << ((char) out_bytes[i]);
+		if((oai_out_bytes[i] > 31) && (oai_out_bytes[i] < 127)) {
+			dout << ((char) oai_out_bytes[i]);
 		} else {
 			dout << ".";
 		}
 	}
 	dout << std::endl;
 }
+
 
 private:
 	bool d_debug;
@@ -300,16 +263,19 @@ private:
 	double d_snr;  // dB
 	double d_nom_freq;  // nominal frequency, Hz
 	double d_freq_offset;  // frequency offset, Hz
-	viterbi_decoder d_decoder; // an object of the class viterbi decoder
-	soft_viterbi_decoder d_soft_decoder;
+	soft_viterbi_decoder s_decoder;
 
 	float d_rx_soft_symbols[48 * MAX_SYM]; // float type to store llrs coming from ls_soft.cc
-	float d_rx_soft_bits[MAX_ENCODED_BITS]; // float type to store llrs to be fed to deinterleaver
-	float d_deinterleaved_soft_bits[MAX_ENCODED_BITS]; // float type to store deinterleaved llrs
-        char d_deinterleaved_soft_bits_char[MAX_ENCODED_BITS];// char type to store deinterleaved llrs
-	uint8_t out_bytes[MAX_PSDU_SIZE + 2]; 
-	unsigned char decoded_bytes[MAX_ENCODED_BITS * 3 / 4]; // ??? 
-
+// per llr one float value 
+	char d_rx_soft_bits[MAX_ENCODED_BITS]; // char type to store llrs to be fed to deinterleaver
+// per soft bit one char value (-8 to +7)
+	char d_deinterleaved_soft_bits[MAX_ENCODED_BITS]; // char type to store deinterleaved llrs
+// per deinterleaved llr one char value 
+        uint8_t oai_out_bytes[MAX_PSDU_SIZE + 2]; 
+	unsigned char decoded_bytes[MAX_ENCODED_BITS * 3 / 4]; 
+	unsigned char oai_decoded_bytes[MAX_ENCODED_BITS * 3 / 4];
+	unsigned char oai_decoded_bits[MAX_ENCODED_BITS * 3 / 4];
+	
 	int copied;
 	bool d_frame_complete;
 };

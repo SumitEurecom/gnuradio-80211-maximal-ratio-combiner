@@ -299,7 +299,7 @@ viterbi_decoder::decode(ofdm_param *ofdm, frame_param *frame, uint8_t *in) {
 	int in_count = 0;
 	int out_count = 0;
 	int n_decoded = 0;
-
+//std::cout << "vitbe " << d_frame->n_data_bits  << std::endl;
 	while(n_decoded < d_frame->n_data_bits) {
 
 		if ((in_count % 4) == 0) { //0 or 3

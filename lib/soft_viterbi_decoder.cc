@@ -109,7 +109,7 @@ soft_viterbi_decoder::soft_viterbi_decoder()
 
 soft_viterbi_decoder::~soft_viterbi_decoder() {}
 
-void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsigned short n)
+void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsigned char *decoded_bits, unsigned short n)
 {
 
 //printf("n is %d\n", n);
@@ -121,9 +121,14 @@ void soft_viterbi_decoder::oai_decode(char *y,unsigned char *decoded_bytes,unsig
 
 
   char *in = y;
-  short m0,m1,w[4],max_metric;
-  short position;
-  unsigned short prev_state0,prev_state1,state;
+  short m0 = 0;
+  short m1 = 0;
+  short w[4] = {0,0,0,0};
+  short max_metric = 0;
+  short position = 0;
+  unsigned short prev_state0 = 0;
+  unsigned short prev_state1 = 0;
+  unsigned short state = 0;
 
   d_partial_metrics[0] = 0;
 
@@ -205,6 +210,9 @@ printf("\n");
 {
 //    printf("prev_state0-%d, position-%d\n",prev_state0, position);
     decoded_bytes[(position)>>3] += (d_inputs[prev_state0][position]<<(position%8));
+
+    decoded_bits[position] = d_inputs[prev_state0][position];
+
 //    printf("pos %d,%d\n",decoded_bytes[(position)>>3],(position%8));
  //      if (position%8==0)
    //       printf("%d\n",decoded_bytes[(position)>>3]);
@@ -214,6 +222,6 @@ printf("\n");
 
   }
 
-
+//std::cout << "exitted" << std::endl;
 
 }

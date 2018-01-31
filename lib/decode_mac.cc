@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <ieee802-11/decode_mac.h>
-
+#include <fstream>
 #include "utils.h"
 #include "viterbi_decoder.h"
 
@@ -49,7 +49,7 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 		gr_vector_const_void_star& input_items,
 		gr_vector_void_star& output_items) {
 
-	const uint8_t *in = (const uint8_t*)input_items[0]; // the hard decoded bit vals from ls.cc
+	const uint8_t *in = (const uint8_t*)input_items[0]; // the hard decision bit vals from ls.cc
 
 	int i = 0;
 
@@ -118,15 +118,34 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 }
 
 void decode() {
-
+        
+//	std::ofstream myfile;
+//	myfile.open ("/home/john/GRBUG.csv");
 	for(int i = 0; i < d_frame.n_sym * 48; i++) {
 		for(int k = 0; k < d_ofdm.n_bpsc; k++) {
 			d_rx_bits[i*d_ofdm.n_bpsc + k] = !!(d_rx_symbols[i] & (1 << k));
 		}
+//	myfile <<(int)d_rx_bits[i*d_ofdm.n_bpsc] << ","<<std::endl;
+		//std::cout << "debugGR,"<<(int)d_rx_bits[i] << std::endl;
 	}
-
+//	myfile.close();
 	deinterleave();
 	uint8_t *decoded = d_decoder.decode(&d_ofdm, &d_frame, d_deinterleaved_bits);
+        //std::ofstream myfile;
+        //myfile.open ("/home/john/GRVITBIT.csv");
+	//for(int i = 0; i < 264; i++)
+	//{
+	//	myfile << (int)decoded[i] << "," << std::endl;
+	//}
+        //decoded[263] = 0;
+        //decoded[262] = 0;
+        //decoded[261] = 0;
+        //decoded[260] = 0;
+        //decoded[259] = 0;
+        //decoded[258] = 0;
+        //decoded[257] = 0;
+        //decoded[256] = 0;
+	//myfile.close();
 	descramble(decoded);
 	print_output();
 
@@ -169,11 +188,15 @@ void deinterleave() {
 	}
 
 	int count = 0;
+	//std::ofstream afile;
+	//afile.open ("/home/john/GRInterleave.csv");
 	for(int i = 0; i < d_frame.n_sym; i++) {
 		for(int k = 0; k < n_cbps; k++) {
 			d_deinterleaved_bits[i * n_cbps + second[first[k]]] = d_rx_bits[i * n_cbps + k];
+		//afile <<(int)d_deinterleaved_bits[i * n_cbps + second[first[k]]] << ","<<std::endl;
 		}
 	}
+//afile.close();
 }
 
 
@@ -181,7 +204,8 @@ void descramble (uint8_t *decoded_bits) {
 
 	int state = 0;
 	std::memset(out_bytes, 0, d_frame.psdu_size+2);
-
+	//std::ofstream afile;
+	//afile.open ("/home/john/GRDS.csv");
 	for(int i = 0; i < 7; i++) {
 		if(decoded_bits[i]) {
 			state |= 1 << (6 - i);
@@ -197,14 +221,17 @@ void descramble (uint8_t *decoded_bits) {
 		bit = feedback ^ (decoded_bits[i] & 0x1);
 		//bit = (decoded_bits[i] & 0x1);
 		out_bytes[i/8] |= bit << (i%8);
+		//afile <<(int)bit << ","<<std::endl;
+                //std::cout << (int)(i/8) << std::endl;
 		state = ((state << 1) & 0x7e) | feedback;
 	}
+	//afile.close();
 }
 
 void print_output() {
 
 	dout << std::endl;
-	dout << "psdu size" << d_frame.psdu_size << std::endl;
+	dout << "psdu size " << d_frame.psdu_size << std::endl;
 	for(int i = 2; i < d_frame.psdu_size+2; i++) {
 		dout << std::setfill('0') << std::setw(2) << std::hex << ((unsigned int)out_bytes[i] & 0xFF) << std::dec << " ";
 		if(i % 16 == 15) {
@@ -236,7 +263,7 @@ private:
 	uint8_t d_rx_symbols[48 * MAX_SYM];
 	uint8_t d_rx_bits[MAX_ENCODED_BITS];
 	uint8_t d_deinterleaved_bits[MAX_ENCODED_BITS];
-	uint8_t out_bytes[MAX_PSDU_SIZE + 2]; // 2 for signal field
+	uint8_t out_bytes[MAX_PSDU_SIZE + 2]; 
 
 	int copied;
 	bool d_frame_complete;

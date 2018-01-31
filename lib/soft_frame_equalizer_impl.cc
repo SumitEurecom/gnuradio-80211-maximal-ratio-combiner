@@ -222,12 +222,10 @@ std::cout << "llr," << i << "," << (float)(out1+o)[i] << "," << (int)(out+o)[i]<
 std::cout << "----------------" << std::endl;
 #endif
 
-
-
 		// signal field
 		if(d_current_symbol == 2) { // 0 is lts1, 1 is lts2, 2 is SIGNAL
 		//s_decode_signal_field(out1 + o * 48);
-		if(s_decode_signal_field(out1 + o * 48)) 
+		if(s_decode_signal_field(out1 + o * 48)) // now it uses soft bits for decoding SIGNAL field
 		//if(decode_signal_field(out + o * 48)) 
 			   
 		{
@@ -294,27 +292,21 @@ soft_frame_equalizer_impl::s_decode_signal_field(float *rx_scaled_llr) {
 	std::cout << "dlv," << i << "," << (int)(s_deinterleaved)[i] << "," << (int)(d_deinterleaved)[i]<< std::endl;  
 	}
 */
-	memset(s_decoded_bytes,0,24*sizeof(char));
-        s_decoder.oai_decode(s_deinterleaved,s_decoded_bytes,24);
+	memset(s_decoded_bytes,0,sizeof(s_decoded_bytes)); // 24 or 3 ? 
+	memset(s_decoded_bits,0,sizeof(s_decoded_bits)); // 24 
+        s_decoder.oai_decode(s_deinterleaved,s_decoded_bytes,s_decoded_bits,24);
 
-	for(int i = 0; i < 3; i++)
-	{
-		std::cout << "s_decoded_bytes," <<(int)s_decoded_bytes[i]<< std::endl;
-	}
-
+/*  
         for(int i = 0; i < 8; i++)
 	{
 		s_decoded[7-i] = (s_decoded_bytes[0] >> (7-i)) & 0x01;
 		s_decoded[7-i+8] = (s_decoded_bytes[1] >> (7-i)) & 0x01;
  		s_decoded[7-i+16] = (s_decoded_bytes[2] >> (7-i)) & 0x01;
 	}
+*/
 
-//for(int i = 0; i < 24; i++)
-//{
-//std::cout << "signal bits," << (int)s_decoded[i] << std::endl;
-//}
 
-	return parse_signal(s_decoded);
+	return parse_signal(s_decoded_bits); // either use s_decoded or s_dcoded_bytes
 	//return true;	
 
 }
@@ -374,7 +366,6 @@ soft_frame_equalizer_impl::parse_signal(uint8_t *decoded_bits) {
                 //std::cout << d_frame_symbols << std::endl;
 		d_frame_mod = d_bpsk;
 		dout << "Encoding: 3 Mbit/s   ";
-		std::cout << "here !" << std::endl;
 		break;
 	case 15:
 		d_frame_encoding = 1;

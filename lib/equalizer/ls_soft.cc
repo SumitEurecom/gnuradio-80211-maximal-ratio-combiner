@@ -137,7 +137,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 					//llr[c] = bits[c] == 0 ? -8 : 7; // llr at high snr 
                                           llr[c] = (4*real(symbols[c]));
 //>std::cout << "symInd, " << n-2 << ","<< (float)llr[c] << "," << (int)bits[c] << std::endl;
-				//std::cout << "llrs," << (float)(-4*real(symbols[c])) << std::endl;
+				//std::cout << "llrs," << (float)(llr[c]) << ","<<(float)real(symbols[c])<<std::endl;
 				    }
 
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
