@@ -95,12 +95,12 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 
 		if(copied < d_frame.n_sym) {
                         
-			dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
+			//dout << "copy one symbol, copied " << copied << " out of " << d_frame.n_sym << std::endl;
 			std::memcpy(d_rx_soft_symbols + (copied * 48), in, 48*sizeof(float));
 			copied++;
                 
 			if(copied == d_frame.n_sym) {
-				dout << "received complete frame - decoding" << std::endl;
+				//dout << "received complete frame - decoding" << std::endl;
 		// at this point everything is copied in "d_rx_soft_symbols" now call decode function
                 // input to decode() is "d_rx_soft_symbols"
                                 
@@ -173,6 +173,20 @@ s_decoder.oai_decode(d_deinterleaved_soft_bits,oai_decoded_bytes,oai_decoded_bit
 		return;
 	}
 	
+
+	mylog(boost::format("encoding: %1% - length: %2% - symbols: %3%")
+			% d_ofdm.encoding % d_frame.psdu_size % d_frame.n_sym);
+
+	// create PDU
+	pmt::pmt_t blob = pmt::make_blob(oai_out_bytes + 2, d_frame.psdu_size - 4);
+	pmt::pmt_t enc = pmt::from_uint64(d_ofdm.encoding);
+	pmt::pmt_t dict = pmt::make_dict();
+	dict = pmt::dict_add(dict, pmt::mp("encoding"), enc);
+	dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_snr));
+	dict = pmt::dict_add(dict, pmt::mp("nomfreq"), pmt::from_double(d_nom_freq));
+	dict = pmt::dict_add(dict, pmt::mp("freqofs"), pmt::from_double(d_freq_offset));
+	dict = pmt::dict_add(dict, pmt::mp("dlt"), pmt::from_long(LINKTYPE_IEEE802_11));
+	message_port_pub(pmt::mp("out"), pmt::cons(dict, blob));
 }
 
 
