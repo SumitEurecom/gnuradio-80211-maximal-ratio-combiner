@@ -35,10 +35,14 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 //>std::cout <<"EQ do chest now -- "<< " symInd->" << n << std::endl;
                 double signal = 0;
 		double noise = 0;
-		int start = 21; // start sub carrier of interference
-		int stop = start+7; // stop subcarrier of interference
+		int start = 20; // start sub carrier of interference
+		int stop = start+10; // stop subcarrier of interference
+		int start2 = 36; // start sub carrier of interference
+		int stop2 = start2+10; // stop subcarrier of interference
 		double noise_interf = 0; // local noise variance of interfered band
 		double noise_non_interf = 0; // local noise variance of non-interfered band
+		double noise_interf2 = 0; // local noise variance of interfered band
+		double noise_non_interf2 = 0; // local noise variance of non-interfered band
 		double conv_est = 0; // noise variance conv method
 		double temp1 = 0;
 		double temp2 = 0;
@@ -60,6 +64,16 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			{
 			noise_non_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
 			}
+
+			if(i >= start2 && i <= stop2)
+			{
+			noise_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
+			}
+			else
+			{
+			noise_non_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
+			}
+
 			conv_est += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
 		
 			noise += std::pow(std::abs(d_H_soft[i] - in[i]), 2);
@@ -73,7 +87,8 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 //		d_NLR = (10 * std::log10((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))))); // Noise Level Ratio
 
 		d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-		//std::cout << "NLR " << (double)d_NLR << " "<< "SNR" << " "<< (double)d_snr_soft <<std::endl;
+		d_NLR2 = ((noise_interf2/(2*(stop2-start2+1)))/(noise_non_interf2/(2*(52-stop2+start2-1))));
+		//std::cout << "NLR " << (double)d_NLR << " "<< " NLR2 " << " "<< (double)d_NLR2 << " threshold " << (double)d_threshold << std::endl;
 
 // assignment loop
 		for(int i = 0; i < 64; i++)
@@ -97,9 +112,19 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 		if(d_NLR > d_threshold) 
 		{
 			d_interference = 1;
-			std::cout << "interference detected" << std::endl;
-			std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
+			std::cout << "interference detected: ZigBee on Ch-17" << std::endl;
+			//std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
 		}
+
+		if(d_NLR2 > d_threshold) 
+		{
+			//d_interference = 1;
+			std::cout << "interference detected: ZigBee on Ch-18" << std::endl;
+			//std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
+		}
+
+
+
 
 	} else { // from n = 2 onwards, data symbols are there
                 //std::cout << "new symbol " << std::endl;
@@ -111,7 +136,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				if((n - d_frame_symbols) == 2)
 				{
 					d_interference = 0; 
-                 			std::cout << "reset "<< "n->" << n << " d_frame_symbols->" << d_frame_symbols << std::endl;
+                 			//std::cout << "reset "<< "n->" << n << " d_frame_symbols->" << d_frame_symbols << std::endl;
 				}
 			}
 		}
@@ -128,7 +153,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
                                 //std::cout << "bits[c]" << (int)bits[c] << std::endl;
                                 if(d_interference){
-					llr[c] = (-4*real(symbols[c]))/d_N_soft_loc[i]; //soft bits +llr scaling
+					llr[c] = (4*real(symbols[c]));///d_N_soft_loc[i]; //soft bits +llr scaling
                                         //std::cout << llr[c] << std::endl;
 					}
 				else{ 

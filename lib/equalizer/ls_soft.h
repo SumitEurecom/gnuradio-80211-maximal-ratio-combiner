@@ -38,6 +38,7 @@ private:
 	int d_interference = 0; // interference present or not	
 	int imt = 0;
 	float d_NLR = 0;
+	float d_NLR2 = 0;
 	
 };
 
