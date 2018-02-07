@@ -33,12 +33,15 @@ private:
 	gr_complex d_H_soft[64];
 	float d_N_soft_loc[64];
 	float d_N_soft_conv[64];
-	float d_threshold = 9;
+	//double CSI[64] = {};
+	double d_H_Var[64] = {}; // normalized channel
+	float d_threshold = 3; // configurable param according to noise level 
 	double d_snr_soft;
 	int d_interference = 0; // interference present or not	
-	int imt = 0;
 	float d_NLR = 0;
 	float d_NLR2 = 0;
+        double d_temp = 0;
+        double temp_symbols[48] = {};
 	
 };
 

@@ -18,6 +18,7 @@
 #include "ls_soft.h"
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 using namespace gr::ieee802_11::equalizer_soft;
 
@@ -25,37 +26,33 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 	
 	if(n == 0) 
 	{
-//>std::cout <<"EQ copied input to d_H_soft --" << " symInd->" << n << std::endl;
-		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); // first lts copied in d_H
-
+		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); 
 	} 
 	else if(n == 1) 
-	{ // the second lts now 
-
-//>std::cout <<"EQ do chest now -- "<< " symInd->" << n << std::endl;
+	{ 
                 double signal = 0;
-		double noise = 0;
-		int start = 20; // start sub carrier of interference
-		int stop = start+10; // stop subcarrier of interference
-		int start2 = 36; // start sub carrier of interference
-		int stop2 = start2+10; // stop subcarrier of interference
-		double noise_interf = 0; // local noise variance of interfered band
-		double noise_non_interf = 0; // local noise variance of non-interfered band
-		double noise_interf2 = 0; // local noise variance of interfered band
-		double noise_non_interf2 = 0; // local noise variance of non-interfered band
+                double norm_lts1 = 0;
+                double norm_lts2 = 0;
+                double noise = 0;
+		int start = 20; // start sub carrier of interference-1
+		int stop = start+10; // stop subcarrier of interference-1
+		int start2 = 36; // start sub carrier of interference-2
+		int stop2 = start2+10; // stop subcarrier of interference-2
+		double noise_interf = 0; // local noise variance of interfered-1 band
+		double noise_non_interf = 0; // local noise variance of non-interfered-1 band
+		double noise_interf2 = 0; // local noise variance of interfered-2 band
+		double noise_non_interf2 = 0; // local noise variance of non-interfered-2 band
 		double conv_est = 0; // noise variance conv method
-		double temp1 = 0;
-		double temp2 = 0;
-		double temp3 = 0;
-		double temp4 = 0;
-// calculation loop	
-		for(int i = 0; i < 64; i++) // loop noise vars calc
+
+		// calculation loop	
+		for(int i = 0; i < 64; i++) 
 		{ 
+
 			if((i == 32) || (i < 6) || ( i > 58)) 
 			{
-				continue; // skip nulls and dc
+				continue; 
 			} 
-			 
+		// interf detection for zb ch- 2(relative)	 
 			if(i >= start && i <= stop)
 			{
 			noise_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
@@ -64,7 +61,8 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			{
 			noise_non_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
 			}
-
+		// interf detection for zb ch- 3(relative)	
+/*
 			if(i >= start2 && i <= stop2)
 			{
 			noise_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
@@ -73,104 +71,114 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 			{
 			noise_non_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
 			}
-
-			conv_est += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
+*/
+			//conv_est += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
 		
 			noise += std::pow(std::abs(d_H_soft[i] - in[i]), 2);
+
 			signal += std::pow(std::abs(d_H_soft[i] + in[i]), 2);
-			d_H_soft[i] += in[i]; // add d_H with in array i.e. second lts 
-			d_H_soft[i] /= LONG_soft[i] * gr_complex(2, 0); // channel estimation for current frame
+
+			d_H_soft[i] += in[i]; 
+
+			d_H_soft[i] /= LONG_soft[i] * gr_complex(2, 0); 
+
+			//CSI[i] += real(d_H_soft[i] * conj(d_H_soft[i]));
+
+                        d_temp += std::pow(std::abs(d_H_soft[i]),2);
+
 		}
-		
+                d_temp = d_temp/64;
+               
 		d_snr_soft = 10 * std::log10(signal / noise / 2);
-		//std::cout << signal << "  " << noise << std::endl;                
-//		d_NLR = (10 * std::log10((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))))); // Noise Level Ratio
 
-		d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-		d_NLR2 = ((noise_interf2/(2*(stop2-start2+1)))/(noise_non_interf2/(2*(52-stop2+start2-1))));
-		//std::cout << "NLR " << (double)d_NLR << " "<< " NLR2 " << " "<< (double)d_NLR2 << " threshold " << (double)d_threshold << std::endl;
+//std::cout << "d_snr_soft "<<d_snr_soft << std::endl;
+/*NLR for ch-2*/d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
+/*NLR for ch-3*/ //d_NLR2 = ((noise_interf2/(2*(stop2-start2+1)))/(noise_non_interf2/(2*(52-stop2+start2-1))));
+//std::cout << "d_NLR "<<d_NLR << std::endl;
 
-// assignment loop
+		// assignment loop
 		for(int i = 0; i < 64; i++)
 		{
+
+                        d_H_Var[i] = std::pow(std::abs(d_H_soft[i]),2)/d_temp; // normalized channel 
+
 			if((i == 32) || (i < 6) || ( i > 58)) 
 			{
 				continue;
 			}
-			if(i > start && i < stop)
+			if(i >= start && i <= stop)
 			{
-				d_N_soft_loc[i] = noise_interf/(2*(stop-start+1));
+				//d_N_soft_loc[i] = noise_interf/(2*(stop-start));
+				//d_N_soft_loc[i] = d_NLR/8;
+				d_N_soft_loc[i] = 1;
+
 			}
 			else 
 			{ 
-				d_N_soft_loc[i] = noise_non_interf/(2*(52-stop+start-1)); 
+				//d_N_soft_loc[i] = noise_non_interf/(2*(52-stop+start)); 
+				d_N_soft_loc[i] = 1; 
 			}
 
-			d_N_soft_conv[i] = conv_est/(2*52);
+			//d_N_soft_conv[i] = conv_est/(2*52);
+			d_N_soft_conv[i] = 1;
 		}
 	
 		if(d_NLR > d_threshold) 
 		{
 			d_interference = 1;
-			std::cout << "interference detected: ZigBee on Ch-17" << std::endl;
-			//std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
+			std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
 		}
-
+		else
+		{
+			d_interference = 0;
+		}
+/* Demo Code Chunk 
 		if(d_NLR2 > d_threshold) 
 		{
 			//d_interference = 1;
 			std::cout << "interference detected: ZigBee on Ch-18" << std::endl;
-			//std::cout << "NLR->" << d_NLR <<" n->" << n <<" if->" << d_interference << " nfs->" << d_frame_symbols << " SNR->"<< d_snr_soft <<std::endl;
 		}
-
-
-
+*/
 
 	} else { // from n = 2 onwards, data symbols are there
-                //std::cout << "new symbol " << std::endl;
-//>std::cout <<"EQ equalize and demap-- " <<" symInd->" << n << std::endl;
+
 		if(d_interference )
 		{
                 	if(n > 2)
 			{
-				if((n - d_frame_symbols) == 2)
+				if((n - d_frame_symbols) == 2) // frame ends, reset interference flag
 				{
 					d_interference = 0; 
-                 			//std::cout << "reset "<< "n->" << n << " d_frame_symbols->" << d_frame_symbols << std::endl;
 				}
 			}
 		}
-
-                //std::cout << "n--" << n << "i-- " << imt << "d_frame_symbols" << d_frame_symbols << std::endl;
 		int c = 0;
-		for(int i = 0; i < 64; i++) {
-			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) { // skip the pilots, zero padded subs and the dc, only equalize 48 data syms 
+		for(int i = 0; i < 64; i++) 
+		{
+			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) 				{ 
 				continue;
 			} else {
-				//std::cout << "EQ equalized for symInd -->" << n << std::endl;
 				symbols[c] = in[i] / d_H_soft[i]; // equalize them with chest d_H
-				//std::cout << "symbol" << symbols[c] << std::endl;
-				bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
-                                //std::cout << "bits[c]" << (int)bits[c] << std::endl;
-                                if(d_interference){
-					llr[c] = (4*real(symbols[c]));///d_N_soft_loc[i]; //soft bits +llr scaling
-                                        //std::cout << llr[c] << std::endl;
-					}
-				else{ 
-					//llr[c] = (-4*real(symbols[c]))/d_N_soft_conv[i];
-					/*check point 1 ,,at low snr these will be float*/
-					//llr[c] = bits[c] == 0 ? -8 : 7; // llr at high snr 
-                                          llr[c] = (4*real(symbols[c]));
-//>std::cout << "symInd, " << n-2 << ","<< (float)llr[c] << "," << (int)bits[c] << std::endl;
-				//std::cout << "llrs," << (float)(llr[c]) << ","<<(float)real(symbols[c])<<std::endl;
-				    }
-
+                                //bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
+				// uncomment above to get hard bits also 
+				bits[c] = 0;
+				temp_symbols[c] = 7*real(in[i] * conj(d_H_soft[i]))/d_temp;
+                                if(d_interference)
+				{
+				llr[c] = temp_symbols[c]/d_N_soft_loc[i];//*CSI[i]; //soft bits +llr scaling
+				//llr[c] = 4*real(symbols[c])/d_N_soft_loc[i];//*CSI[i]; //soft bits +llr scaling
+				}
+				else
+				{ 
+                                llr[c] = temp_symbols[c]/d_N_soft_conv[i];//*CSI[i];
+				//llr[c] = 4*real(symbols[c])/d_N_soft_conv[i];//*CSI[i]; //soft bits +llr scaling
+				}
+				
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
-				//std::cout << (unsigned int)bits[c] << "--" << symbols[c] << std::endl;
                                 c++;
-                                //std::cout << "c--" << c <<"--i--"<< i <<std::endl;
-			}
+                                }
 		}
+
 	}
 }
 

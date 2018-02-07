@@ -46,7 +46,7 @@
     </param>
     <param>
       <key>id</key>
-      <value>wifi_phy_hier</value>
+      <value>wifi_phy_hier_soft</value>
     </param>
     <param>
       <key>max_nouts</key>
