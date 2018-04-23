@@ -100,6 +100,7 @@ soft_frame_equalizer_impl::set_frequency(double freq) {
 	d_freq = freq;
 }
 
+
 void
 soft_frame_equalizer_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required) {
 	ninput_items_required[0] = noutput_items;

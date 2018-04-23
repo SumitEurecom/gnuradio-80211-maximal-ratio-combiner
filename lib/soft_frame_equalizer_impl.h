@@ -45,8 +45,6 @@ public:
 			gr_vector_void_star &output_items);
 
 private:
-
-
 	bool parse_signal(uint8_t *signal);
 	bool decode_signal_field(uint8_t *rx_bits);
 	bool s_decode_signal_field(float *rx_scaled_llr); // rx_scaled_llr are coming from ls_soft.cc

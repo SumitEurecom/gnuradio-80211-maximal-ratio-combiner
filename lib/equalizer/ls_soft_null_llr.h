@@ -25,7 +25,7 @@ namespace gr {
 namespace ieee802_11 {
 namespace equalizer_soft {
 
-class ls_soft: public base_soft {
+class ls_soft_null_llr: public base_soft {
 public:
 	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
 	virtual double get_snr_soft();
@@ -35,7 +35,7 @@ private:
 	float d_N_soft_conv[64];
 	//double CSI[64] = {};
 	double d_H_Var[64] = {}; // normalized channel
-	float d_threshold = 100; // configurable param according to noise level 
+	float d_threshold = 3; // configurable param according to noise level 
 	double d_snr_soft;
 	int d_interference = 0; // interference present or not	
 	float d_NLR = 0;
