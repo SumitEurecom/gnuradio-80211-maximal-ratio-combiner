@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <ieee802-11/sync_short.h>
+#include <ieee802-11/sync_short_dual_channel.h>
 #include <gnuradio/io_signature.h>
 #include "utils.h"
 
@@ -24,16 +24,13 @@ using namespace gr::ieee802_11;
 
 static const int MIN_GAP = 480;
 static const int MAX_SAMPLES = 540 * 80;
-static int ios1[] = {sizeof(gr_complex), sizeof(gr_complex),
-sizeof(gr_complex), sizeof(gr_complex), sizeof(float)};
-static std::vector<int> iosig1(ios1, ios1+sizeof(ios1)/sizeof(int));
-class sync_short_impl : public sync_short {
+
+class sync_short_dual_channel_impl : public sync_short_dual_channel {
 
 public:
-sync_short_impl(double threshold, unsigned int min_plateau, bool log, bool debug) :
-		block("sync_short",
-			//gr::io_signature::makev(5, 5, get_input_sizes()),
-			gr::io_signature::makev(5, 5, iosig1),
+sync_short_dual_channel_impl(double threshold, unsigned int min_plateau, bool log, bool debug) :
+		block("sync_short_dual_channel",
+			gr::io_signature::make3(3, 3, sizeof(gr_complex), sizeof(gr_complex), sizeof(float)),
 			gr::io_signature::make2(2, 2, sizeof(gr_complex), sizeof(gr_complex))),
 		d_log(log),
 		d_debug(debug),
@@ -52,16 +49,15 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 		gr_vector_void_star& output_items) {
 
 	const gr_complex *in = (const gr_complex*)input_items[0];
-	const gr_complex *in_1 = (const gr_complex*)input_items[1];
-	const gr_complex *in_abs = (const gr_complex*)input_items[2];
-	const gr_complex *in_abs_1 = (const gr_complex*)input_items[3];
-	const float *in_cor = (const float*)input_items[4];
+	const gr_complex *in_abs = (const gr_complex*)input_items[1];
+	const float *in_cor = (const float*)input_items[2];
 	gr_complex *out = (gr_complex*)output_items[0];
 	gr_complex *out_1 = (gr_complex*)output_items[1];
 
-int noutput = noutput_items;
-int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput_items[1])), std::min(ninput_items[4], ninput_items[3]));
-	dout << "SHORT noutput : " << noutput << " ninput: " << ninput_items[0] << std::endl;
+	int noutput = noutput_items;
+	int ninput = std::min(std::min(ninput_items[0], ninput_items[1]), ninput_items[2]);
+
+	// dout << "SHORT noutput : " << noutput << " ninput: " << ninput_items[0] << std::endl;
 
 	switch(d_state) {
 
@@ -77,9 +73,8 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 					d_state = COPY;
 					d_copied = 0;
 					d_freq_offset = arg(in_abs[i]) / 16;
-					d_freq_offset_1 = arg(in_abs_1[i]) / 16;
 					d_plateau = 0;
-		                        insert_tag(nitems_written(0), d_freq_offset, d_freq_offset_1, nitems_read(0) + i);
+					insert_tag(nitems_written(0), d_freq_offset, nitems_read(0) + i);
 					dout << "SHORT Frame!" << std::endl;
 					break;
 				}
@@ -88,9 +83,7 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 			}
 		}
 
-		consume_each(i); // Tell the scheduler how_many_items were consumed on each input stream.
-
-
+		consume_each(i);
 		return 0;
 	}
 
@@ -107,8 +100,7 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 					d_copied = 0;
 					d_plateau = 0;
 					d_freq_offset = arg(in_abs[o]) / 16;
-					d_freq_offset_1 = arg(in_abs_1[o]) / 16;
-					insert_tag(nitems_written(0) + o, d_freq_offset, d_freq_offset_1, nitems_read(0) + o);
+					insert_tag(nitems_written(0) + o, d_freq_offset, nitems_read(0) + o);
 					dout << "SHORT Frame!" << std::endl;
 					break;
 				}
@@ -118,7 +110,6 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 			}
 
 			out[o] = in[o] * exp(gr_complex(0, -d_freq_offset * d_copied));
-			out_1[o] = in_1[o] * exp(gr_complex(0, -d_freq_offset_1 * d_copied));
 			o++;
 			d_copied++;
 		}
@@ -138,39 +129,27 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 	return 0;
 }
 
-void insert_tag(uint64_t item, double freq_offset, double freq_offset_1, uint64_t input_item) {
+void insert_tag(uint64_t item, double freq_offset, uint64_t input_item) {
 	mylog(boost::format("frame start at in: %2% out: %1%") % item % input_item);
 
 	const pmt::pmt_t key = pmt::string_to_symbol("wifi_start");
 	const pmt::pmt_t value = pmt::from_double(freq_offset);
-	const pmt::pmt_t value_1 = pmt::from_double(freq_offset_1);
 	const pmt::pmt_t srcid = pmt::string_to_symbol(name());
 	add_item_tag(0, item, key, value, srcid);
-	add_item_tag(1, item, key, value_1, srcid);
 }
 
-static std::vector<int> get_input_sizes(){
-    std::vector<int> input_sizes;
-    input_sizes.push_back(sizeof(gr_complex));
-    input_sizes.push_back(sizeof(gr_complex));
-    input_sizes.push_back(sizeof(gr_complex));
-    input_sizes.push_back(sizeof(gr_complex));
-    input_sizes.push_back(sizeof(float));
-
-    return input_sizes;
-    }
 private:
 	enum {SEARCH, COPY} d_state;
 	int d_copied;
 	int d_plateau;
-	float d_freq_offset, d_freq_offset_1;
+	float d_freq_offset;
 	const double d_threshold;
 	const bool d_log;
 	const bool d_debug;
 	const unsigned int MIN_PLATEAU;
 };
 
-sync_short::sptr
-sync_short::make(double threshold, unsigned int min_plateau, bool log, bool debug) {
-	return gnuradio::get_initial_sptr(new sync_short_impl(threshold, min_plateau, log, debug));
+sync_short_dual_channel::sptr
+sync_short_dual_channel::make(double threshold, unsigned int min_plateau, bool log, bool debug) {
+	return gnuradio::get_initial_sptr(new sync_short_dual_channel_impl(threshold, min_plateau, log, debug));
 }

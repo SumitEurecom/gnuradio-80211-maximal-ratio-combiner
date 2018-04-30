@@ -260,6 +260,7 @@ std::cout << "----------------" << std::endl;
 	}
 
 	consume(0, i);
+        std::cout << "nitems_written(0)" << nitems_written(0) << "nitems_written(1)" << nitems_written(1) << std::endl;
 	return o;
 }
 

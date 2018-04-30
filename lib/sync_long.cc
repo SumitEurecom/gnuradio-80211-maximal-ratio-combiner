@@ -19,7 +19,7 @@
 #include <gnuradio/io_signature.h>
 #include <gnuradio/filter/fir_filter.h>
 #include <gnuradio/fft/fft.h>
-
+#include <iostream>
 #include <list>
 #include <tuple>
 
@@ -159,9 +159,10 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 	d_count += o;
 	consume(0, i);
 	consume(1, i);
+        //std::cout << "nitems_written(0) : " << nitems_written(0) << std::endl;
 	return o;
 }
-
+        
 void forecast (int noutput_items, gr_vector_int &ninput_items_required) {
 
 	// in sync state we need at least a symbol to correlate

@@ -14,8 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef INCLUDED_IEEE802_11_SYNC_SHORT_H
-#define INCLUDED_IEEE802_11_SYNC_SHORT_H
+#ifndef INCLUDED_IEEE802_11_SYNC_SHORT_DUAL_CHANNEL_H
+#define INCLUDED_IEEE802_11_SYNC_SHORT_DUAL_CHANNEL_H
 
 #include <ieee802-11/api.h>
 #include <gnuradio/block.h>
@@ -23,18 +23,16 @@
 namespace gr {
 namespace ieee802_11 {
 
-class IEEE802_11_API sync_short : virtual public block
+class IEEE802_11_API sync_short_dual_channel : virtual public block
 {
 public:
 
-	typedef boost::shared_ptr<sync_short> sptr;
+	typedef boost::shared_ptr<sync_short_dual_channel> sptr;
 	static sptr make(double threshold, unsigned int min_plateau, bool log = false, bool debug = false);
-  //      static int ios[] = {sizeof(gr_complex), sizeof(gr_complex), sizeof(gr_complex), sizeof(float)};
-  //      static std::vector<int> iosig(ios, ios+sizeof(ios)/sizeof(int));
 
 };
 
 }  // namespace ieee802_11
 }  // namespace gr
 
-#endif /* INCLUDED_IEEE802_11_SYNC_SHORT_H */
+#endif /* INCLUDED_IEEE802_11_SYNC_SHORT_DUAL_CHANNEL_H */
