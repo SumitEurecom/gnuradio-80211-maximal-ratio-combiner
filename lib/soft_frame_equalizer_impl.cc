@@ -121,6 +121,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 	int i = 0;
 	int o = 0;
 	gr_complex symbols[48]; // equalized symbols 
+	gr_complex symbols_oai[48]; // equalized symbols method OAI 
 	gr_complex current_symbol[64]; // unequalized symbols 
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
@@ -209,7 +210,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 		// do equalization
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+				symbols, symbols_oai, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
 /*check point-2*/
 #ifdef llr_out_from_equalizer
 if(d_current_symbol == 2)
@@ -253,7 +254,7 @@ std::cout << "----------------" << std::endl;
                 //>std::cout << "increasing output pointer--symind--" << d_current_symbol << std::endl;
 			o++;
 			pmt::pmt_t pdu = pmt::make_dict();
-			message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols)));
+			message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols_oai)));
 		}
 
 		i++;

@@ -1,0 +1,3 @@
+#! /bin/bash
+tshark -n -Y "wlan.ta == 23:23:23:23:23:23" -r wifi_perf_under_zb_interf_tx | wc -l
+tshark -n -Y "wlan.ta == 23:23:23:23:23:23" -r wifi_perf_under_zb_interf_rx | wc -l

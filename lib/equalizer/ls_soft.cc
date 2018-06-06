@@ -22,7 +22,7 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
 	
 	if(n == 0) 
 	{
@@ -163,10 +163,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, uint8_t 
 				// uncomment above to get hard bits also 
 				bits[c] = 0;
 				temp_symbols[c] = 7*real(in[i] * conj(d_H_soft[i]))/d_temp;
+				symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
                                 if(d_interference)
 				{
 				llr[c] = temp_symbols[c]/d_N_soft_loc[i];//*CSI[i]; //soft bits +llr scaling
-				//if(c >= 20 && c <= 27) {llr[c] = 0;}
+				if(c >= 20 && c <= 29) {llr[c] = 0;}
 				//llr[c] = 4*real(symbols[c])/d_N_soft_loc[i];//*CSI[i]; //soft bits +llr scaling
 				}
 				else
