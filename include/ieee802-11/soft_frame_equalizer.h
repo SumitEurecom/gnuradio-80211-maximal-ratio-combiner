@@ -38,11 +38,12 @@ class IEEE802_11_API soft_frame_equalizer : virtual public gr::block
 
 public:
 	typedef boost::shared_ptr<soft_frame_equalizer> sptr;
-	static sptr make(Equalizer_soft algo, double freq, double bw,
+	static sptr make(Equalizer_soft algo, double freq, double bw, int scaling,
 			bool log, bool debug);
 	virtual void set_algorithm(Equalizer_soft algo) = 0;
 	virtual void set_bandwidth(double bw) = 0;
 	virtual void set_frequency(double freq) = 0;
+	virtual void set_scaling(int scaling) = 0;
 };
 
 } // namespace ieee802_11

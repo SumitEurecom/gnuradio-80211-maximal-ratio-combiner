@@ -22,7 +22,9 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, int scaling, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+
+	//std::cout << "yo scaling is " << scaling << std::endl;
 	
 	if(n == 0) 
 	{
@@ -163,8 +165,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 				// uncomment above to get hard bits also 
 				bits[c] = 0;
 				temp_symbols[c] = 7*real(in[i] * conj(d_H_soft[i]))/d_temp;
-				symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
-                                if(d_interference)
+				//symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
+				symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(std::pow(std::abs(d_H_soft[i]),2),0);
+/* the commented section valid only when interference detection happens*/                      
+/*          
+				if(d_interference)
 				{
 				llr[c] = temp_symbols[c]/d_N_soft_loc[i];//*CSI[i]; //soft bits +llr scaling
 				if(c >= 20 && c <= 29) {llr[c] = 0;}
@@ -175,7 +180,16 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
                                 llr[c] = temp_symbols[c]/d_N_soft_conv[i];//*CSI[i];
 				//llr[c] = 4*real(symbols[c])/d_N_soft_conv[i];//*CSI[i]; //soft bits +llr scaling
 				}
-				
+*/
+
+/*when there is deterministic interference, the code below is applicable */
+
+				llr[c] = temp_symbols[c]/d_N_soft_conv[i];
+				 
+                                if (scaling)
+				{
+				if(c >= 20 && c <= 29) {llr[c] = 0;}
+				}			
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
                                 c++;
                                 }
