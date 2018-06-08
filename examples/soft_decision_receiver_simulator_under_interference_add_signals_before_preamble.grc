@@ -257,7 +257,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>192000</value>
+      <value>400000</value>
     </param>
   </block>
   <block>
@@ -1095,6 +1095,57 @@
     </param>
   </block>
   <block>
+    <key>blocks_file_sink</key>
+    <param>
+      <key>append</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/john/spawc/zb_dump</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1180, 568)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>90</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>blocks_file_sink_1_0</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+  </block>
+  <block>
     <key>blocks_message_strobe</key>
     <param>
       <key>alias</key>
@@ -1463,7 +1514,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(956, 1432)</value>
+      <value>(1068, 1432)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3292,7 +3343,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1128, 508)</value>
+      <value>(440, 564)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3304,7 +3355,7 @@
     </param>
     <param>
       <key>note</key>
-      <value>Note that here I add zigbee interference after the LTS</value>
+      <value>Note that here I add zigbee interference in the air</value>
     </param>
   </block>
   <block>
@@ -3702,7 +3753,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(864, 516)</value>
+      <value>(848, 1800)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4398,7 +4449,19 @@
   </block>
   <connection>
     <source_block_id>blocks_add_xx_0_0</source_block_id>
-    <sink_block_id>blocks_stream_to_vector_0</sink_block_id>
+    <sink_block_id>blocks_complex_to_mag_squared_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_add_xx_0_0</source_block_id>
+    <sink_block_id>blocks_delay_0_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_add_xx_0_0</source_block_id>
+    <sink_block_id>blocks_multiply_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -4475,6 +4538,12 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
+    <source_block_id>blocks_multiply_const_vxx_0_0_0</source_block_id>
+    <sink_block_id>blocks_file_sink_1_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>blocks_multiply_xx_0</source_block_id>
     <sink_block_id>ieee802_11_moving_average_xx_1</sink_block_id>
     <source_key>0</source_key>
@@ -4512,27 +4581,9 @@
   </connection>
   <connection>
     <source_block_id>channels_channel_model_0</source_block_id>
-    <sink_block_id>blocks_complex_to_mag_squared_0</sink_block_id>
+    <sink_block_id>blocks_add_xx_0_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>channels_channel_model_0</source_block_id>
-    <sink_block_id>blocks_delay_0_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>channels_channel_model_0</source_block_id>
-    <sink_block_id>blocks_multiply_xx_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>channels_channel_model_0</source_block_id>
-    <sink_block_id>qtgui_freq_sink_x_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>channels_channel_model_0_0</source_block_id>
@@ -4745,10 +4796,16 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>sync_long</source_block_id>
-    <sink_block_id>blocks_add_xx_0_0</sink_block_id>
+    <source_block_id>rational_resampler_xxx_0_0</source_block_id>
+    <sink_block_id>qtgui_freq_sink_x_0</sink_block_id>
     <source_key>0</source_key>
-    <sink_key>1</sink_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sync_long</source_block_id>
+    <sink_block_id>blocks_stream_to_vector_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>sync_short</source_block_id>

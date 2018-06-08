@@ -1644,6 +1644,10 @@
       <key>minoutbuf</key>
       <value>0</value>
     </param>
+    <param>
+      <key>scaling</key>
+      <value>0</value>
+    </param>
   </block>
   <block>
     <key>ieee802_11_sync_long</key>
@@ -2413,6 +2417,10 @@
       <value>samp_rate</value>
     </param>
     <param>
+      <key>stemplot</key>
+      <value>False</value>
+    </param>
+    <param>
       <key>tr_chan</key>
       <value>0</value>
     </param>
@@ -2469,7 +2477,7 @@
     </param>
     <param>
       <key>ant0</key>
-      <value>RX2</value>
+      <value>TX/RX</value>
     </param>
     <param>
       <key>bw0</key>

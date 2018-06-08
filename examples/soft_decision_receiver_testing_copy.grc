@@ -1994,6 +1994,10 @@
       <key>minoutbuf</key>
       <value>0</value>
     </param>
+    <param>
+      <key>scaling</key>
+      <value>0</value>
+    </param>
   </block>
   <block>
     <key>ieee802_11_sync_long</key>
@@ -2184,7 +2188,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(272, 1352)</value>
+      <value>(272, 1416)</value>
     </param>
     <param>
       <key>_rotation</key>
