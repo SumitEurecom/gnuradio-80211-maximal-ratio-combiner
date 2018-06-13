@@ -1014,7 +1014,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/john/spawc/8juneTest.pcap</value>
+      <value>/home/john/spawc/without_scaling.pcap</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1065,7 +1065,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/john/spawc/8juneTest_no_scaling.pcap</value>
+      <value>/home/john/spawc/with_scaling.pcap</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -2254,7 +2254,7 @@
     </param>
     <param>
       <key>scaling</key>
-      <value>0</value>
+      <value>1</value>
     </param>
   </block>
   <block>

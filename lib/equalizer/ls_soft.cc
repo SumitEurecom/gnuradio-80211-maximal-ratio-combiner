@@ -188,7 +188,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 				 
                                 if (scaling)
 				{
-				if(c >= 17 && c <= 33) {llr[c] = 0;}
+				if(c >= 19 && c <= 30) {llr[c] = 0;}
 				}			
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
                                 c++;
