@@ -22,7 +22,7 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, int scaling, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
 
 	//std::cout << "yo scaling is " << scaling << std::endl;
 	
@@ -36,16 +36,10 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
                 double norm_lts1 = 0;
                 double norm_lts2 = 0;
                 double noise = 0;
-		int start = 29; // start sub carrier of interference-1
-		int stop = 37; // stop subcarrier of interference-1
-		//int start2 = 36; // start sub carrier of interference-2
-		//int stop2 = start2+10; // stop subcarrier of interference-2
+		int start = 27; // start sub carrier of interference-1
+		int stop = 39; // stop subcarrier of interference-1
 		double noise_interf = 0; // local noise variance of interfered-1 band
 		double noise_non_interf = 0; // local noise variance of non-interfered-1 band
-		//double noise_interf2 = 0; // local noise variance of interfered-2 band
-		//double noise_non_interf2 = 0; // local noise variance of non-interfered-2 band
-		//double conv_est = 0; // noise variance conv method
-
 		// calculation loop	
 		for(int i = 0; i < 64; i++) 
 		{ 
@@ -54,7 +48,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 			{
 				continue; 
 			} 
-		// interf detection for zb ch- 2(relative)	 
+	 		// LNV Estimates
 			if(i >= start && i <= stop)
 			{
 			noise_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
@@ -63,40 +57,23 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 			{
 			noise_non_interf += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
 			}
-		// interf detection for zb ch- 3(relative)	
-/*
-			if(i >= start2 && i <= stop2)
-			{
-			noise_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
-			}
-			else
-			{
-			noise_non_interf2 += (std::pow(std::abs(d_H_soft[i] - in[i]), 2)); 
-			}
-*/
-			//conv_est += (std::pow(std::abs(d_H_soft[i] - in[i]), 2));
-		
-			//noise += std::pow(std::abs(d_H_soft[i] - in[i]), 2);
-
-			//signal += std::pow(std::abs(d_H_soft[i] + in[i]), 2);
 
 			d_H_soft[i] += in[i]; 
 
 			d_H_soft[i] /= LONG_soft[i] * gr_complex(2, 0); 
-
-			//CSI[i] += real(d_H_soft[i] * conj(d_H_soft[i]));
 
                         d_temp += std::pow(std::abs(d_H_soft[i]),2);
 
 		}
                 d_temp = d_temp/64;
                
-		//d_snr_soft = 10 * std::log10(signal / noise / 2);
+		d_snr_soft = 10 * std::log10(signal / noise / 2);
 
 //std::cout << "d_snr_soft "<<d_snr_soft << std::endl;
+
 /*NLR for ch-2*/d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-/*NLR for ch-3*/ //d_NLR2 = ((noise_interf2/(2*(stop2-start2+1)))/(noise_non_interf2/(2*(52-stop2+start2-1))));
-		if(d_NLR > d_threshold) 
+//std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
+		if(d_NLR > threshold) 
 		{
 			d_interference = 1;
 			//std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
@@ -142,7 +119,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 
 
 	} else { // from n = 2 onwards, data symbols are there
-/*
+
 		if(d_interference )
 		{
                 	if(n > 2)
@@ -153,7 +130,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 				}
 			}
 		}
-*/
+
 		int c = 0;
 		for(int i = 0; i < 64; i++) 
 		{
@@ -186,10 +163,13 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 
 				llr[c] = temp_symbols[c]/d_N_soft_conv[i];
 				 
-                                if (scaling)
+                                if (d_interference)
+				if(scaling)
 				{
-				if(c >= 19 && c <= 30) {llr[c] = 0;}
-				}			
+					{
+						if(c >= 19 && c <= 30) {llr[c] = 0;}
+					}			
+				}
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
                                 c++;
                                 }

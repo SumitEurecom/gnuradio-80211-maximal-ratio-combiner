@@ -31,13 +31,14 @@ parse_mac_impl(bool log, bool debug) :
 		block("parse_mac",
 				gr::io_signature::make(0, 0, 0),
 				gr::io_signature::make(0, 0, 0)),
-		d_log(log), d_last_seq_no(-1),
+		d_log(log), d_last_seq_no(-1), d_total_packets(0),
 		d_debug(debug) {
 
 	message_port_register_in(pmt::mp("in"));
 	set_msg_handler(pmt::mp("in"), boost::bind(&parse_mac_impl::parse, this, _1));
 
 	message_port_register_out(pmt::mp("fer"));
+	message_port_register_out(pmt::mp("tpr"));
 }
 
 ~parse_mac_impl() {
@@ -268,10 +269,12 @@ void parse_data(char *buf, int length) {
 
 	// keep track of values
 	d_last_seq_no = seq_no;
-
+	d_total_packets += 1;
 	// publish FER estimate
 	pmt::pmt_t pdu = pmt::make_f32vector(lost_frames + 1, fer * 100);
+	pmt::pmt_t pdu1 = pmt::make_f32vector(lost_frames + 1, d_total_packets);
 	message_port_pub(pmt::mp("fer"), pmt::cons( pmt::PMT_NIL, pdu ));
+	message_port_pub(pmt::mp("tpr"), pmt::cons( pmt::PMT_NIL, pdu1 ));
 }
 
 void parse_control(char *buf, int length) {
@@ -356,6 +359,7 @@ private:
 	bool d_log;
 	bool d_debug;
 	int d_last_seq_no;
+	int d_total_packets;
 };
 
 parse_mac::sptr
