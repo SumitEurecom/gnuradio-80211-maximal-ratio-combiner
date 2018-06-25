@@ -119,5 +119,11 @@
         <optional>1</optional>
 	</source>
 
+	<source>
+		<name>noise_vec</name>
+		<type>message</type>
+        <optional>1</optional>
+	</source>
+
 
 </block>

@@ -44,6 +44,7 @@ soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double
 	d_freq_offset_from_synclong(0.0) {
 
 	message_port_register_out(pmt::mp("symbols"));
+	message_port_register_out(pmt::mp("noise_vec"));
 
 	d_bpsk = constellation_bpsk::make(); // constellation object for bpsk of class constellation_bpsk
 	d_qpsk = constellation_qpsk::make(); // constellation object for bpsk of class constellation_qpsk
@@ -133,6 +134,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
 	gr_complex symbols[48]; // equalized symbols 
 	gr_complex symbols_oai[48]; // equalized symbols method OAI 
 	gr_complex current_symbol[64]; // unequalized symbols 
+	float noise_vec[64]; // noise variance vector 
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
 
@@ -221,7 +223,8 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		//std::cout << "scaling is " << d_scaling << std::endl;
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, symbols_oai, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+				symbols, symbols_oai, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+
 /*check point-2*/
 #ifdef llr_out_from_equalizer
 if(d_current_symbol == 2)
@@ -264,7 +267,10 @@ std::cout << "----------------" << std::endl;
 		if(d_current_symbol > 2) {
                 	o++;
 			pmt::pmt_t pdu = pmt::make_dict();
+			pmt::pmt_t pdu1 = pmt::make_dict();
 			message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols_oai)));
+			message_port_pub(pmt::mp("noise_vec"), pmt::cons(pmt::make_dict(), pmt::init_f32vector(64, noise_vec)));
+
 		}
 
 		i++;

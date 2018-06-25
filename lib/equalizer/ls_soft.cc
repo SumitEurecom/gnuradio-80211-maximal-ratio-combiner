@@ -22,7 +22,7 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
 
 	//std::cout << "yo scaling is " << scaling << std::endl;
 	
@@ -72,23 +72,16 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 //std::cout << "d_snr_soft "<<d_snr_soft << std::endl;
 
 /*NLR for ch-2*/d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-//std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
+std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
 		if(d_NLR > threshold) 
 		{
 			d_interference = 1;
-			//std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
+			std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
 		}
 		else
 		{
 			d_interference = 0;
 		}
-/* Demo Code Chunk 
-		if(d_NLR2 > d_threshold) 
-		{
-			//d_interference = 1;
-			std::cout << "interference detected: ZigBee on Ch-18" << std::endl;
-		}
-*/
 
 		// assignment loop
 		for(int i = 0; i < 64; i++)
@@ -102,21 +95,21 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 			}
 			if(i >= start && i <= stop)
 			{
-				//d_N_soft_loc[i] = noise_interf/(2*(stop-start));
+				d_N_soft_loc[i] = noise_interf/(2*(stop-start));
 				//d_N_soft_loc[i] = d_NLR/8;
-				d_N_soft_loc[i] = 1;
+				//d_N_soft_loc[i] = 1;
 
 			}
 			else 
 			{ 
-				//d_N_soft_loc[i] = noise_non_interf/(2*(52-stop+start)); 
-				d_N_soft_loc[i] = 1; 
+				d_N_soft_loc[i] = noise_non_interf/(2*(52-stop+start)); 
+				//d_N_soft_loc[i] = 1; 
 			}
 
 			//d_N_soft_conv[i] = conv_est/(2*52);
 			d_N_soft_conv[i] = 1;
 		}
-
+		std::memcpy(noise_vec, d_N_soft_loc, sizeof(float)*64);
 
 	} else { // from n = 2 onwards, data symbols are there
 
@@ -181,3 +174,4 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 double ls_soft::get_snr_soft() {
 	return d_snr_soft;
 }
+

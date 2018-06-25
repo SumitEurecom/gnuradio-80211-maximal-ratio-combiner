@@ -83,6 +83,7 @@ private:
 	unsigned char s_decoded_bits[24];// becz oai decoder writes 1 bit in 1 bit field
 	uint8_t s_decoded[24]; // becz GR writes 1 bit in 1 byte field: only for signal field 24 bits 
 	gr_complex symbols[48];
+	float noise_vec[64];
 
 	boost::shared_ptr<gr::digital::constellation> d_frame_mod;
 	constellation_bpsk::sptr d_bpsk;

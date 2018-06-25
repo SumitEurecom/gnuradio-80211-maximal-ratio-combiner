@@ -28,7 +28,7 @@ namespace equalizer_soft { // my own namespace
 class base_soft { // my own base equalizer abstract class 
 public:
 	virtual ~base_soft() {}; 
-	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) = 0; // my own base class method, have to be implemented in the derieved class
+	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) = 0; // my own base class method, have to be implemented in the derieved class
 	virtual double get_snr_soft() = 0;
 
 	static const gr_complex POLARITY_soft[127];
