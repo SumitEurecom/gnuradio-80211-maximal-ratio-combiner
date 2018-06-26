@@ -90,53 +90,6 @@
     </param>
   </block>
   <block>
-    <key>variable_qtgui_check_box</key>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>false</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1024, 1056)</value>
-    </param>
-    <param>
-      <key>gui_hint</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>Reset_Packet_Count</value>
-    </param>
-    <param>
-      <key>label</key>
-      <value></value>
-    </param>
-    <param>
-      <key>true</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>int</value>
-    </param>
-  </block>
-  <block>
     <key>variable_qtgui_chooser</key>
     <param>
       <key>comment</key>
@@ -243,7 +196,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>2484000000</value>
+      <value>2467000000</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -3071,7 +3024,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(552, 1404)</value>
+      <value>(568, 1460)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -3103,7 +3056,7 @@
     </param>
     <param>
       <key>label1</key>
-      <value>Total Packets Received (No scaling)</value>
+      <value>Total Packets Received (Without LNV LLR scaling)</value>
     </param>
     <param>
       <key>unit1</key>
@@ -3302,7 +3255,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(976, 1404)</value>
+      <value>(1064, 1452)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -3334,7 +3287,7 @@
     </param>
     <param>
       <key>label1</key>
-      <value>Total Packets Received (With scaling)</value>
+      <value>Total Packets Received (With LNV LLR scaling)</value>
     </param>
     <param>
       <key>unit1</key>
@@ -3857,7 +3810,7 @@
     </param>
     <param>
       <key>ylabel</key>
-      <value>Amplitude</value>
+      <value>Noise Level Ratio</value>
     </param>
     <param>
       <key>yunit</key>

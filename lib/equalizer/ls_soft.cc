@@ -72,11 +72,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 //std::cout << "d_snr_soft "<<d_snr_soft << std::endl;
 
 /*NLR for ch-2*/d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
+//std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
 		if(d_NLR > threshold) 
 		{
 			d_interference = 1;
-			std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
+			//std::cout << "interference detected: ZigBee on Ch-17" << "d_NLR " << d_NLR <<std::endl;
 		}
 		else
 		{
