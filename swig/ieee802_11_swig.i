@@ -29,6 +29,7 @@
 #include "ieee802-11/ether_encap.h"
 #include "ieee802-11/frame_equalizer.h"
 #include "ieee802-11/soft_frame_equalizer.h"
+#include "ieee802-11/soft_frame_equalizer_dc.h"
 #include "ieee802-11/mac.h"
 #include "ieee802-11/mapper.h"
 #include "ieee802-11/moving_average_cc.h"
@@ -36,7 +37,10 @@
 #include "ieee802-11/parse_mac.h"
 #include "ieee802-11/signal_field.h"
 #include "ieee802-11/sync_long.h"
+#include "ieee802-11/sync_long_dc.h"
 #include "ieee802-11/sync_short.h"
+#include "ieee802-11/sync_short_dc.h"
+#include "ieee802-11/sync_short_dc_sep_corr.h"
 %}
 
 %include "gnuradio/digital/packet_header_default.h"
@@ -53,6 +57,7 @@
 %include "ieee802-11/ether_encap.h"
 %include "ieee802-11/frame_equalizer.h"
 %include "ieee802-11/soft_frame_equalizer.h"
+%include "ieee802-11/soft_frame_equalizer_dc.h"
 %include "ieee802-11/mac.h"
 %include "ieee802-11/mapper.h"
 %include "ieee802-11/moving_average_cc.h"
@@ -60,7 +65,10 @@
 %include "ieee802-11/parse_mac.h"
 %include "ieee802-11/signal_field.h"
 %include "ieee802-11/sync_long.h"
+%include "ieee802-11/sync_long_dc.h"
 %include "ieee802-11/sync_short.h"
+%include "ieee802-11/sync_short_dc.h"
+%include "ieee802-11/sync_short_dc_sep_corr.h"
 
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, chunks_to_symbols);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, decode_mac);
@@ -68,13 +76,17 @@ GR_SWIG_BLOCK_MAGIC2(ieee802_11, decode_mac_soft);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, ether_encap);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, frame_equalizer);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, soft_frame_equalizer);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, soft_frame_equalizer_dc);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, mac);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, mapper);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, moving_average_cc);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, moving_average_ff);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, parse_mac);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, sync_long);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, sync_long_dc);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, sync_short);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, sync_short_dc);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, sync_short_dc_sep_corr);
 
 %template(signal_field_sptr) boost::shared_ptr<gr::ieee802_11::signal_field>;
 %pythoncode %{

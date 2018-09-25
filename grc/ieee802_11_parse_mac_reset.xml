@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+
+<block>
+	<name>WiFi Parse MAC Reset</name>
+	<key>ieee802_11_parse_mac_reset</key>
+	<category>[IEEE802.11]</category>
+	<import>import ieee802_11</import>
+	<make>ieee802_11.parse_mac_reset($log, $debug, $reset)</make>
+
+	<param>
+		<name>Log</name>
+		<key>log</key>
+		<value>False</value>
+		<type>bool</type>
+
+		<option>
+			<name>Enable</name>
+			<key>True</key>
+		</option>
+		<option>
+			<name>Disable</name>
+			<key>False</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Debug</name>
+		<key>debug</key>
+		<value>False</value>
+		<type>bool</type>
+
+		<option>
+			<name>Enable</name>
+			<key>True</key>
+		</option>
+		<option>
+			<name>Disable</name>
+			<key>False</key>
+		</option>
+	</param>
+
+	<param>
+		<name>Reset</name>
+		<key>reset</key>
+		<value>0</value>
+		<type>real</type>
+	</param>
+
+	<sink>
+		<name>in</name>
+		<type>message</type>
+	</sink>
+
+	<source>
+		<name>fer</name>
+		<type>message</type>
+		<optional>1</optional>
+	</source>
+
+	<source>
+		<name>tpr</name>
+		<type>message</type>
+		<optional>1</optional>
+	</source>
+
+</block>
+

@@ -80,7 +80,9 @@ list(APPEND include_sources
     parse_mac.h
     signal_field.h
     sync_long.h
+    sync_long_dc.h
     sync_short.h
+    sync_short_dc.h
 )
 
 install(

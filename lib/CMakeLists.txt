@@ -108,12 +108,16 @@ list(APPEND gr_ieee802_11_sources
     ether_encap_impl.cc
     frame_equalizer_impl.cc
     soft_frame_equalizer_impl.cc
+    soft_frame_equalizer_impl_dc.cc
     mac.cc
     mapper.cc
     parse_mac.cc
     signal_field_impl.cc
     sync_long.cc
+    sync_long_dc.cc
     sync_short.cc
+    sync_short_dc.cc
+    sync_short_dc_sep_corr.cc
     utils.cc
     viterbi_decoder.cc
     soft_viterbi_decoder.cc
