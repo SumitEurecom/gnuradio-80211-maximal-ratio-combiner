@@ -284,7 +284,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>96000</value>
+      <value>196000</value>
     </param>
   </block>
   <block>
@@ -1474,57 +1474,6 @@
     </param>
   </block>
   <block>
-    <key>blocks_head</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(224, 460)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>180</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>blocks_head_0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>num_items</key>
-      <value>512000000000</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-  </block>
-  <block>
     <key>blocks_message_strobe</key>
     <param>
       <key>alias</key>
@@ -2227,7 +2176,7 @@
     </param>
     <param>
       <key>taps</key>
-      <value>1.0,0.09</value>
+      <value>1.0,0.9,0.4,0.9,0.6,0.09</value>
     </param>
   </block>
   <block>
@@ -2290,7 +2239,7 @@
     </param>
     <param>
       <key>taps</key>
-      <value>1.0,0.09</value>
+      <value>1.0,0.9,0.4,0.9,0.6,0.09</value>
     </param>
   </block>
   <block>
@@ -3678,7 +3627,7 @@
     </param>
     <param>
       <key>debug</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -3702,7 +3651,7 @@
     </param>
     <param>
       <key>log</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -3745,7 +3694,7 @@
     </param>
     <param>
       <key>debug</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -3769,7 +3718,7 @@
     </param>
     <param>
       <key>log</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>maxoutbuf</key>
@@ -4163,7 +4112,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(360, 824)</value>
+      <value>(336, 792)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -4214,7 +4163,7 @@
     </param>
     <param>
       <key>average</key>
-      <value>1.0</value>
+      <value>0.1</value>
     </param>
     <param>
       <key>axislabels</key>
@@ -4254,7 +4203,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(728, 948)</value>
+      <value>(800, 1036)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4450,7 +4399,7 @@
     </param>
     <param>
       <key>nconnections</key>
-      <value>1</value>
+      <value>2</value>
     </param>
     <param>
       <key>showports</key>
@@ -4557,7 +4506,7 @@
     </param>
     <param>
       <key>color1</key>
-      <value>("black", "white")</value>
+      <value>("blue", "red")</value>
     </param>
     <param>
       <key>factor1</key>
@@ -5342,18 +5291,6 @@
     <sink_key>4</sink_key>
   </connection>
   <connection>
-    <source_block_id>blocks_head_0</source_block_id>
-    <sink_block_id>blocks_multiply_const_vxx_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>blocks_head_0</source_block_id>
-    <sink_block_id>blocks_multiply_const_vxx_0_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>blocks_message_strobe_0</source_block_id>
     <sink_block_id>ieee802_11_mac_0</sink_block_id>
     <source_key>strobe</source_key>
@@ -5475,7 +5412,13 @@
   </connection>
   <connection>
     <source_block_id>foo_packet_pad2_0</source_block_id>
-    <sink_block_id>blocks_head_0</sink_block_id>
+    <sink_block_id>blocks_multiply_const_vxx_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>foo_packet_pad2_0</source_block_id>
+    <sink_block_id>blocks_multiply_const_vxx_0_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -5712,6 +5655,12 @@
     <sink_block_id>blocks_multiply_xx_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>pfb_arb_resampler_xxx_0</source_block_id>
+    <sink_block_id>qtgui_freq_sink_x_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>pfb_arb_resampler_xxx_0_0</source_block_id>

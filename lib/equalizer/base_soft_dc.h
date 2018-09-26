@@ -15,35 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_IEEE802_11_EQUALIZER_BASE_H
-#define INCLUDED_IEEE802_11_EQUALIZER_BASE_H
+#ifndef INCLUDED_IEEE802_11_EQUALIZER_BASE_DC_H
+#define INCLUDED_IEEE802_11_EQUALIZER_BASE_DC_H
 
 #include <gnuradio/gr_complex.h>
 #include <gnuradio/digital/constellation.h>
 
 namespace gr {
 namespace ieee802_11 {
-namespace equalizer_soft { // my own namespace
+namespace equalizer_soft_dc { // my own namespace
 
-class base_soft { // my own base equalizer abstract class 
+class base_soft_dc { // my own base equalizer abstract class 
 public:
 
-virtual ~base_soft() {}; 
+virtual ~base_soft_dc() {}; 
 
-virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) = 0; // my own base class method, have to be implemented in the derieved class
+virtual void equalize_soft_dc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_1, gr_complex *symbols_oai, gr_complex *symbols_oai_1, float *noise_vec, float *noise_vec_1, int scaling, int threshold, uint8_t *bits, uint8_t *bits_1, float *llr, float *llr_1,  boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) = 0; // my own base class method, have to be implemented in the derieved class
 
+virtual double get_snr_soft_dc() = 0;
 
-
-	virtual double get_snr_soft() = 0;
-
-	static const gr_complex POLARITY_soft[127];
+static const gr_complex POLARITY_soft_dc[127];
 
 protected:
-	static const gr_complex LONG_soft[64];
+	static const gr_complex LONG_soft_dc[64];
 };
 
 } /* namespace channel_estimation */
 } /* namespace ieee802_11 */
 } /* namespace gr */
 
-#endif /* INCLUDED_IEEE802_11_EQUALIZER_BASE_H */
+#endif /* INCLUDED_IEEE802_11_EQUALIZER_BASE_DC_H */

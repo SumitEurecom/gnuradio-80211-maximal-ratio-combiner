@@ -15,36 +15,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef INCLUDED_IEEE802_11_EQUALIZER_LS_H
-#define INCLUDED_IEEE802_11_EQUALIZER_LS_H
+#ifndef INCLUDED_IEEE802_11_EQUALIZER_LS_DC_H
+#define INCLUDED_IEEE802_11_EQUALIZER_LS_DC_H
 
-#include "base_soft.h"
+#include "base_soft_dc.h"
 #include <vector>
 
 namespace gr {
 namespace ieee802_11 {
-namespace equalizer_soft {
+namespace equalizer_soft_dc {
 
-class ls_soft: public base_soft {
+class ls_soft_dc: public base_soft_dc {
 public:
-	virtual void equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
+	virtual void equalize_soft_dc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_1, gr_complex *symbols_oai, gr_complex *symbols_oai_1, float *noise_vec, float *noise_vec_1, int scaling, int threshold, uint8_t *bits, uint8_t *bits_1, float *llr, float *llr_1,  boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
 
-	//virtual void equalize_soft_dc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_1, gr_complex *symbols_oai, gr_complex *symbols_oai_1, float *noise_vec, float *noise_vec_1, int scaling, int threshold, uint8_t *bits, uint8_t *bits_1, float *llr, float *llr_1, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
-
-	virtual double get_snr_soft();
+	virtual double get_snr_soft_dc();
 private:
 	gr_complex d_H_soft[64];
+	gr_complex d_H_soft_1[64];
 	float d_N_soft_loc[64];
+	float d_N_soft_loc_1[64];
 	float d_N_soft_conv[64];
+	float d_N_soft_conv_1[64];
 	//double CSI[64] = {};
 	double d_H_Var[64] = {}; // normalized channel
+	double d_H_Var_1[64] = {}; // normalized channel
 	//float d_threshold = 3; // configurable param according to noise level 
 	double d_snr_soft;
+	double d_snr_soft_1;
 	int d_interference = 0; // interference present or not	
 	float d_NLR = 0;
-	float d_NLR2 = 0;
+	float d_NLR_1 = 0;
         double d_temp = 0;
+        double d_temp_1 = 0;
         double temp_symbols[48] = {};
+        double temp_symbols_1[48] = {};
 	
 };
 
@@ -52,5 +57,5 @@ private:
 } /* namespace ieee802_11 */
 } /* namespace gr */
 
-#endif /* INCLUDED_IEEE802_11_EQUALIZER_LS_H */
+#endif /* INCLUDED_IEEE802_11_EQUALIZER_LS_DC_H */
 

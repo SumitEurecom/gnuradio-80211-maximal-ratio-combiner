@@ -91,6 +91,7 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 
 		const uint64_t offset = d_tags.front().offset;
 		const uint64_t offset_1 = d_tags_1.front().offset;
+		//std::cout << "offset " << offset << " offset_1 " << offset_1 << std::endl;
 
 		if((offset > nread) && (offset_1 > nread_1) ) {
 			ninput = offset - nread;
@@ -115,12 +116,16 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 
 	case SYNC:
 		d_fir.filterN(d_correlation, in, std::min(SYNC_LENGTH, std::max(ninput - 63, 0)));
-		d_fir.filterN(d_correlation_1, in, std::min(SYNC_LENGTH, std::max(ninput_1 - 63, 0)));
+		d_fir.filterN(d_correlation_1, in_1, std::min(SYNC_LENGTH, std::max(ninput_1 - 63, 0)));
                 
   
 		while(i + 63 < ninput) {
 			// Add correlation values 
-                        d_correlation_sum[i] = d_correlation[i] + d_correlation_1[i];
+                        d_correlation_sum[i] = std::abs(d_correlation[i]) + std::abs(d_correlation_1[i]);
+			//d_correlation_sum[i] = std::max(std::abs(d_correlation[i]), std::abs(d_correlation_1[i]));
+                                //std::cout << "corr val 1" << d_correlation[i] << std::endl;
+                                //std::cout << "corr val 2" << d_correlation_1[i] << std::endl;
+                                //std::cout << "corr val sum" << d_correlation_sum[i] << std::endl;
 			d_cor.push_back(pair<gr_complex, int>(d_correlation_sum[i], d_offset));
 
 			i++;

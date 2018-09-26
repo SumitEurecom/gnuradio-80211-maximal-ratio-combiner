@@ -4045,7 +4045,7 @@
     </param>
     <param>
       <key>stemplot</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>tr_chan</key>
