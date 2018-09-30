@@ -126,10 +126,10 @@ sbmrc_impl::general_work (int noutput_items,
 
 	gr::thread::scoped_lock lock(d_mutex);
 
-	const gr_complex *in = (const gr_complex *) input_items[0];
+	const gr_complex *in   = (const gr_complex *) input_items[0];
 	const gr_complex *in_1 = (const gr_complex *) input_items[1];
-	uint8_t *out = (uint8_t *) output_items[0];
-	float *out1 = (float *) output_items[1];
+	uint8_t *out           = (uint8_t *) output_items[0];
+	float *out1            = (float *) output_items[1];
 
 	int i = 0;
 	int o = 0;
@@ -141,9 +141,10 @@ sbmrc_impl::general_work (int noutput_items,
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
 
-	while((i < ninput_items[0]) && (i < ninput_items[1]) && (o < noutput_items)) { // do this till 64 input items are consumed and 48 output items are outputted
+	while((i < ninput_items[0]) && (o < noutput_items)) 
+{ // do this till 64 input items are consumed and 48 output items are outputted
 
-		get_tags_in_window(tags, 0, i, i + 1, pmt::string_to_symbol("wifi_start")); 
+		get_tags_in_window(tags,   0, i, i + 1, pmt::string_to_symbol("wifi_start")); 
 		// this tag is coming from sync_short.cc
 		get_tags_in_window(tags_1, 0, i, i + 1, pmt::string_to_symbol("wifi_start")); 
 		// this tag is coming from sync_short.cc
@@ -155,13 +156,13 @@ sbmrc_impl::general_work (int noutput_items,
 			d_frame_mod = d_bpsk; // SIGNAL field is bpsk
 
 	d_freq_offset_from_synclong = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI);
-	d_freq_offset_from_synclong_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI);
+	//d_freq_offset_from_synclong_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI);
 	d_epsilon0 = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI * d_freq);
-	d_epsilon0_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI * d_freq);
+	//d_epsilon0_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI * d_freq);
 	d_er = 0;
 	d_er_1 = 0;
 
-			dout << "epsilon: " << d_epsilon0 << std::endl;
+	        dout << "epsilon: " << d_epsilon0 << std::endl;
 		
 
 }
@@ -173,8 +174,8 @@ sbmrc_impl::general_work (int noutput_items,
 			continue;
 		}
                 //>std::cout << "copy 64 samples to memory -- symInd--" << d_current_symbol << std::endl;
-		std::memcpy(current_symbol, in + i*64, 64*sizeof(gr_complex));
-		std::memcpy(current_symbol_1, in_1 + i*64, 64*sizeof(gr_complex));
+		std::memcpy(current_symbol,   in   +  i*64, 64*sizeof(gr_complex));
+		std::memcpy(current_symbol_1, in_1 +  i*64, 64*sizeof(gr_complex));
 
 		// compensate sampling offset
 		for(int i = 0; i < 64; i++) {
