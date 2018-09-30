@@ -99,6 +99,13 @@
 		<nports>1</nports>
 	</sink>
 
+	<sink>
+		<name>in_1</name>
+		<type>complex</type>
+		<vlen>64</vlen>
+		<nports>1</nports>
+	</sink>
+
 	<source>
 		<name>out</name>
 		<type>byte</type>

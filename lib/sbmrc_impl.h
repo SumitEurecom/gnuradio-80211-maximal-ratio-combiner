@@ -57,6 +57,7 @@ private:
 	equalizer_sbmrc::base_sbmrc *d_equalizer;
 	gr::thread::mutex d_mutex;
 	std::vector<gr::tag_t> tags;
+	std::vector<gr::tag_t> tags_1;
 	bool d_debug;
 	bool d_log;
 	int  d_current_symbol;
@@ -66,9 +67,12 @@ private:
 	// freq offset
 	double d_freq;  // Hz
 	double d_freq_offset_from_synclong;  // Hz, estimation from "sync_long" block
+	double d_freq_offset_from_synclong_1;  // Hz, estimation from "sync_long" block
 	double d_bw;  // Hz
 	double d_er;
+	double d_er_1;
 	double d_epsilon0;
+	double d_epsilon0_1;
 	int d_scaling;
 	int d_threshold;
 	gr_complex d_prev_pilots[4];
