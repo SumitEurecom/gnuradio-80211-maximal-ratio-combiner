@@ -83,6 +83,7 @@ list(APPEND include_sources
     sync_long_dc.h
     sync_short.h
     sync_short_dc.h
+    sbmrc_dc.h
 )
 
 install(

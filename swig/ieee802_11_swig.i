@@ -29,6 +29,7 @@
 #include "ieee802-11/ether_encap.h"
 #include "ieee802-11/frame_equalizer.h"
 #include "ieee802-11/soft_frame_equalizer.h"
+#include "ieee802-11/sbmrc.h"
 #include "ieee802-11/mac.h"
 #include "ieee802-11/mapper.h"
 #include "ieee802-11/moving_average_cc.h"
@@ -55,6 +56,7 @@
 %include "ieee802-11/ether_encap.h"
 %include "ieee802-11/frame_equalizer.h"
 %include "ieee802-11/soft_frame_equalizer.h"
+%include "ieee802-11/sbmrc.h"
 %include "ieee802-11/mac.h"
 %include "ieee802-11/mapper.h"
 %include "ieee802-11/moving_average_cc.h"
@@ -72,6 +74,7 @@ GR_SWIG_BLOCK_MAGIC2(ieee802_11, decode_mac_soft);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, ether_encap);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, frame_equalizer);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, soft_frame_equalizer);
+GR_SWIG_BLOCK_MAGIC2(ieee802_11, sbmrc);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, mac);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, mapper);
 GR_SWIG_BLOCK_MAGIC2(ieee802_11, moving_average_cc);

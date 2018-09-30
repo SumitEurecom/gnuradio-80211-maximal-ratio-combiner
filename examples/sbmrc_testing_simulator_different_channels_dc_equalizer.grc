@@ -3655,73 +3655,6 @@
     </param>
   </block>
   <block>
-    <key>ieee802_11_soft_frame_equalizer_dc</key>
-    <param>
-      <key>algo</key>
-      <value>ieee802_11.LS</value>
-    </param>
-    <param>
-      <key>bw</key>
-      <value>10e6</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>debug</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>freq</key>
-      <value>5.89e9</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(1456, 2664)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>ieee802_11_soft_frame_equalizer_dc_0</value>
-    </param>
-    <param>
-      <key>log</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>scaling</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>threshold</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
     <key>ieee802_11_sync_long_dc</key>
     <param>
       <key>alias</key>
@@ -5389,22 +5322,10 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>fft_vxx_0</source_block_id>
-    <sink_block_id>ieee802_11_soft_frame_equalizer_dc_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>fft_vxx_0_0</source_block_id>
     <sink_block_id>digital_ofdm_cyclic_prefixer_0_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>fft_vxx_0_1</source_block_id>
-    <sink_block_id>ieee802_11_soft_frame_equalizer_dc_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>1</sink_key>
   </connection>
   <connection>
     <source_block_id>foo_packet_pad2_0</source_block_id>
@@ -5555,30 +5476,6 @@
     <sink_block_id>blocks_pdu_to_tagged_stream_0</sink_block_id>
     <source_key>tpr</source_key>
     <sink_key>pdus</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_soft_frame_equalizer_dc_0</source_block_id>
-    <sink_block_id>ieee802_11_decode_mac_soft_1_1_1</sink_block_id>
-    <source_key>1</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_soft_frame_equalizer_dc_0</source_block_id>
-    <sink_block_id>ieee802_11_decode_mac_soft_1_1_0</sink_block_id>
-    <source_key>3</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_soft_frame_equalizer_dc_0</source_block_id>
-    <sink_block_id>blocks_null_sink_0_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>ieee802_11_soft_frame_equalizer_dc_0</source_block_id>
-    <sink_block_id>blocks_null_sink_0</sink_block_id>
-    <source_key>2</source_key>
-    <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>ieee802_11_sync_long_dc_0</source_block_id>
