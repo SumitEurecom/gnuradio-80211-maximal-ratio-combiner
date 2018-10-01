@@ -135,38 +135,37 @@ sbmrc_impl::general_work (int noutput_items,
 	int o = 0;
 	gr_complex symbols[48]; // equalized symbols 
 	gr_complex symbols_oai[48]; // equalized symbols method OAI 
+	gr_complex symbols_1[48]; // equalized symbols 
+	gr_complex symbols_oai_1[48]; // equalized symbols method OAI 
 	gr_complex current_symbol[64]; // unequalized symbols 
 	gr_complex current_symbol_1[64]; // unequalized symbols 
 	float noise_vec[64]; // noise variance vector 
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
 
-	while((i < ninput_items[0]) && (o < noutput_items)) 
+	while((i < ninput_items[0]) && (i < ninput_items[1]) && (o < noutput_items)) 
 { // do this till 64 input items are consumed and 48 output items are outputted
 
 		get_tags_in_window(tags,   0, i, i + 1, pmt::string_to_symbol("wifi_start")); 
 		// this tag is coming from sync_short.cc
-		get_tags_in_window(tags_1, 0, i, i + 1, pmt::string_to_symbol("wifi_start")); 
+		get_tags_in_window(tags_1, 1, i, i + 1, pmt::string_to_symbol("wifi_start")); 
 		// this tag is coming from sync_short.cc
 
 		// new frame
-		if(tags.size()) { // if got the tag wifi_start, time to decode SIGNAL field
-			d_current_symbol = 0; // counter index for parsing the symbols in the current frame
-			d_frame_symbols = 0; // it is total no of data ofdm symbols in that frame, its populated after decoding SIGNAL field
-			d_frame_mod = d_bpsk; // SIGNAL field is bpsk
-
-	d_freq_offset_from_synclong = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI);
-	//d_freq_offset_from_synclong_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI);
-	d_epsilon0 = pmt::to_double(tags.front().value) * d_bw / (2 * M_PI * d_freq);
-	//d_epsilon0_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI * d_freq);
-	d_er = 0;
+		if(tags.size() && tags_1.size()) 
+{ // if got the tag wifi_start, time to decode SIGNAL field
+        d_current_symbol = 0; // counter index for parsing the symbols in the current frame
+	d_frame_symbols  = 0; // it is total no of data ofdm symbols in that frame, its populated after decoding SIGNAL field
+	d_frame_mod = d_bpsk; // SIGNAL field is bpsk
+	d_freq_offset_from_synclong   = pmt::to_double(tags.front().value)   * d_bw / (2 * M_PI);
+	d_freq_offset_from_synclong_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI);
+	d_epsilon0   = pmt::to_double(tags.front().value)   * d_bw / (2 * M_PI * d_freq);
+	d_epsilon0_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI * d_freq);
+	d_er   = 0;
 	d_er_1 = 0;
-
-	        dout << "epsilon: " << d_epsilon0 << std::endl;
+        dout << "epsilon: " << d_epsilon0 << std::endl;
 		
-
 }
-
 		// not interesting -> skip
 		if(d_current_symbol > (d_frame_symbols + 2)) { // d_frame_symbols + lts1 + lts2
 		//>std::cout << "skipping -- symInd--" << d_current_symbol << std::endl;
@@ -178,24 +177,38 @@ sbmrc_impl::general_work (int noutput_items,
 		std::memcpy(current_symbol_1, in_1 +  i*64, 64*sizeof(gr_complex));
 
 		// compensate sampling offset
-		for(int i = 0; i < 64; i++) {
-			current_symbol[i] *= exp(gr_complex(0, 2*M_PI*d_current_symbol*80*(d_epsilon0 + d_er)*(i-32)/64));
-		}
+		for(int i = 0; i < 64; i++) 
+	{
+current_symbol[i]   *= exp(gr_complex(0, 2*M_PI*d_current_symbol *80*(d_epsilon0 + d_er)    *(i-32)/64));
+current_symbol_1[i] *= exp(gr_complex(0, 2*M_PI*d_current_symbol *80*(d_epsilon0_1 + d_er_1)*(i-32)/64));
+	}
 
-		gr_complex p = equalizer_sbmrc::base_sbmrc::POLARITY_sbmrc[(d_current_symbol - 2) % 127];
+	gr_complex p   = equalizer_sbmrc::base_sbmrc::POLARITY_sbmrc[(d_current_symbol - 2) % 127];
+	//gr_complex p_1 = equalizer_sbmrc::base_sbmrc::POLARITY_sbmrc[(d_current_symbol - 2) % 127];
 		gr_complex sum =
 			(current_symbol[11] *  p) +
 			(current_symbol[25] *  p) +
 			(current_symbol[39] *  p) +
 			(current_symbol[53] * -p);
+		gr_complex sum_1 =
+			(current_symbol_1[11] *  p) +
+			(current_symbol_1[25] *  p) +
+			(current_symbol_1[39] *  p) +
+			(current_symbol_1[53] * -p);
 
 		double beta;
+		double beta_1;
 		if(d_current_symbol < 2) {
 			beta = arg(
 					current_symbol[11] -
 					current_symbol[25] +
 					current_symbol[39] +
 					current_symbol[53]);
+			beta_1 = arg(
+					current_symbol_1[11] -
+					current_symbol_1[25] +
+					current_symbol_1[39] +
+					current_symbol_1[53]);
 
 		} else {
 			beta = arg(
@@ -203,6 +216,12 @@ sbmrc_impl::general_work (int noutput_items,
 					(current_symbol[39] *  p) +
 					(current_symbol[25] *  p) +
 					(current_symbol[53] * -p));
+			beta_1 = arg(
+					(current_symbol_1[11] *  p) +
+					(current_symbol_1[39] *  p) +
+					(current_symbol_1[25] *  p) +
+					(current_symbol_1[53] * -p));
+
 		}
 
 		double er = arg(
@@ -211,16 +230,30 @@ sbmrc_impl::general_work (int noutput_items,
 				(conj(d_prev_pilots[2]) * current_symbol[39] *  p) +
 				(conj(d_prev_pilots[3]) * current_symbol[53] * -p));
 
-		er *= d_bw / (2 * M_PI * d_freq * 80);
+
+		double er_1 = arg(
+				(conj(d_prev_pilots_1[0]) * current_symbol_1[11] *  p) +
+				(conj(d_prev_pilots_1[1]) * current_symbol_1[25] *  p) +
+				(conj(d_prev_pilots_1[2]) * current_symbol_1[39] *  p) +
+				(conj(d_prev_pilots_1[3]) * current_symbol_1[53] * -p));
+
+		er   *= d_bw / (2 * M_PI * d_freq * 80);
+		er_1 *= d_bw / (2 * M_PI * d_freq * 80);
 
 		d_prev_pilots[0] = current_symbol[11] *  p;
 		d_prev_pilots[1] = current_symbol[25] *  p;
 		d_prev_pilots[2] = current_symbol[39] *  p;
 		d_prev_pilots[3] = current_symbol[53] * -p;
 
+		d_prev_pilots_1[0] = current_symbol_1[11] *  p;
+		d_prev_pilots_1[1] = current_symbol_1[25] *  p;
+		d_prev_pilots_1[2] = current_symbol_1[39] *  p;
+		d_prev_pilots_1[3] = current_symbol_1[53] * -p;
+
 		// compensate residual frequency offset
 		for(int i = 0; i < 64; i++) {
 			current_symbol[i] *= exp(gr_complex(0, -beta));
+			current_symbol_1[i] *= exp(gr_complex(0, -beta_1));
 		}
 
 		// update estimate of residual frequency offset
@@ -228,13 +261,13 @@ sbmrc_impl::general_work (int noutput_items,
 
 			double alpha = 0.1;
 			d_er = (1-alpha) * d_er + alpha * er;
+			d_er_1 = (1-alpha) * d_er_1 + alpha * er_1;
 		}
 
 		// do equalization
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		//std::cout << "scaling is " << d_scaling << std::endl;
-		d_equalizer->equalize_sbmrc(current_symbol, d_current_symbol,
-				symbols, symbols_oai, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+d_equalizer->equalize_sbmrc(current_symbol, current_symbol_1, d_current_symbol, symbols, symbols_oai, symbols_1, symbols_oai_1, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
 
 /*check point-2*/
 #ifdef llr_out_from_equalizer
@@ -289,6 +322,7 @@ std::cout << "----------------" << std::endl;
 	}
 
 	consume(0, i);
+	consume(1, i);
 	return o;
 }
 

@@ -76,6 +76,7 @@ private:
 	int d_scaling;
 	int d_threshold;
 	gr_complex d_prev_pilots[4];
+	gr_complex d_prev_pilots_1[4];
 
 	int  d_frame_bytes;
 	int  d_frame_symbols;

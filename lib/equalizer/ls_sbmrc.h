@@ -27,24 +27,30 @@ namespace equalizer_sbmrc {
 
 class ls_sbmrc: public base_sbmrc {
 public:
-	virtual void equalize_sbmrc(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
+	virtual void equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_oai, gr_complex *symbols_1, gr_complex *symbols_oai_1, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
 
 	//virtual void equalize_soft_dc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_1, gr_complex *symbols_oai, gr_complex *symbols_oai_1, float *noise_vec, float *noise_vec_1, int scaling, int threshold, uint8_t *bits, uint8_t *bits_1, float *llr, float *llr_1, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols);
 
 	virtual double get_snr_sbmrc();
 private:
 	gr_complex d_H_soft[64];
+	gr_complex d_H_soft_1[64];
 	float d_N_soft_loc[64];
+	float d_N_soft_loc_1[64];
 	float d_N_soft_conv[64];
+	float d_N_soft_conv_1[64];
 	//double CSI[64] = {};
 	double d_H_Var[64] = {}; // normalized channel
+	double d_H_Var_1[64] = {}; // normalized channel
 	//float d_threshold = 3; // configurable param according to noise level 
 	double d_snr_soft;
 	int d_interference = 0; // interference present or not	
 	float d_NLR = 0;
-	float d_NLR2 = 0;
+	float d_NLR_1 = 0;
         double d_temp = 0;
+        double d_temp_1 = 0;
         double temp_symbols[48] = {};
+        double temp_symbols_1[48] = {};
 	
 };
 
