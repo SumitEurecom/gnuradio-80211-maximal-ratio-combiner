@@ -64,12 +64,12 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 		gr_vector_const_void_star& input_items,
 		gr_vector_void_star& output_items) {
 
-	const gr_complex *in = (const gr_complex*)input_items[0];
-	const gr_complex *in_delayed = (const gr_complex*)input_items[1];
-	const gr_complex *in_1 = (const gr_complex*)input_items[2];
-	const gr_complex *in_delayed_1 = (const gr_complex*)input_items[3];
-	gr_complex *out = (gr_complex*)output_items[0];
-	gr_complex *out_1 = (gr_complex*)output_items[1];
+	const gr_complex *in 		= (const gr_complex*)input_items[0];
+	const gr_complex *in_delayed 	= (const gr_complex*)input_items[1];
+	const gr_complex *in_1 		= (const gr_complex*)input_items[2];
+	const gr_complex *in_delayed_1 	= (const gr_complex*)input_items[3];
+	gr_complex *out 		= (gr_complex*)output_items[0];
+	gr_complex *out_1 		= (gr_complex*)output_items[1];
 
 	dout << "LONG ninput[0] " << ninput_items[0] << "   ninput[1] " <<
 			ninput_items[1] << "  noutput " << noutput <<
@@ -81,30 +81,34 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 	int ninput_1 = std::min(std::min(ninput_items[2], ninput_items[3]), 8192);
 
 
-	const uint64_t nread = nitems_read(0);
-	const uint64_t nread_1 = nitems_read(2);
-	get_tags_in_range(d_tags, 0, nread, nread + ninput);
+	const uint64_t nread 	= nitems_read(0);
+	const uint64_t nread_1 	= nitems_read(2);
+	get_tags_in_range(d_tags,   0, nread,   nread + ninput);
 	get_tags_in_range(d_tags_1, 2, nread_1, nread_1 + ninput_1);
-	if ((d_tags.size()) && (d_tags_1.size())) {
-		std::sort(d_tags.begin(), d_tags.end(), gr::tag_t::offset_compare);
+	if ((d_tags.size()) && (d_tags_1.size())) 
+	{
+		std::sort(d_tags.begin(),   d_tags.end(),   gr::tag_t::offset_compare);
 		std::sort(d_tags_1.begin(), d_tags_1.end(), gr::tag_t::offset_compare);
 
-		const uint64_t offset = d_tags.front().offset;
+		const uint64_t offset 	= d_tags.front().offset;
 		const uint64_t offset_1 = d_tags_1.front().offset;
 		//std::cout << "offset " << offset << " offset_1 " << offset_1 << std::endl;
 
-		if((offset > nread) && (offset_1 > nread_1) ) {
-			ninput = offset - nread;
-			ninput_1 = offset_1 - nread_1;
-		} else {
+		if((offset > nread) && (offset_1 > nread_1) ) 
+		{
+			ninput 		= offset - nread;
+			ninput_1 	= offset_1 - nread_1;
+		} 
+		else 
+		{
 			if(d_offset && (d_state == SYNC)) {
 				throw std::runtime_error("wtf");
 			}
 			if(d_state == COPY) {
 				d_state = RESET;
 			}
-			d_freq_offset_short = pmt::to_double(d_tags.front().value);
-			d_freq_offset_short_1 = pmt::to_double(d_tags_1.front().value);
+			d_freq_offset_short 	= pmt::to_double(d_tags.front().value);
+			d_freq_offset_short_1 	= pmt::to_double(d_tags_1.front().value);
 		}
 	}
 
@@ -115,7 +119,7 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 	switch(d_state) {
 
 	case SYNC:
-		d_fir.filterN(d_correlation, in, std::min(SYNC_LENGTH, std::max(ninput - 63, 0)));
+		d_fir.filterN(d_correlation,   in,   std::min(SYNC_LENGTH, std::max(ninput   - 63, 0)));
 		d_fir.filterN(d_correlation_1, in_1, std::min(SYNC_LENGTH, std::max(ninput_1 - 63, 0)));
                 
   

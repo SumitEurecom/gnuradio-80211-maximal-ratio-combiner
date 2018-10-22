@@ -107,14 +107,21 @@
 	</sink>
 
 	<source>
-		<name>out</name>
-		<type>byte</type>
+		<name>llr_out_b1</name>
+		<type>float</type>
 		<vlen>48</vlen>
 		<nports>1</nports>
 	</source>
 
 	<source>
-		<name>llr_out</name>
+		<name>llr_out_b2</name>
+		<type>float</type>
+		<vlen>48</vlen>
+		<nports>1</nports>
+	</source>
+
+	<source>
+		<name>llr_out_sbmrc</name>
 		<type>float</type>
 		<vlen>48</vlen>
 		<nports>1</nports>

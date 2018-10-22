@@ -155,6 +155,11 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 /*when there is deterministic interference, the code below is applicable */
 
 				llr[c] = temp_symbols[c]/d_N_soft_conv[i];
+				if(llr[c] > 7) 
+					llr[c] = 7; 
+				else if(llr[c] < -8) 
+					llr[c] = -8; 
+				else llr[c] = (float)llr[c];
 				 
                                 if (d_interference)
 				if(scaling)

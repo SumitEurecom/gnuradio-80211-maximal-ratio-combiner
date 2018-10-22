@@ -51,13 +51,13 @@ int general_work (int noutput_items, gr_vector_int& ninput_items,
 		gr_vector_const_void_star& input_items,
 		gr_vector_void_star& output_items) {
 
-	const gr_complex *in = (const gr_complex*)input_items[0];
-	const gr_complex *in_1 = (const gr_complex*)input_items[1];
-	const gr_complex *in_abs = (const gr_complex*)input_items[2];
-	const gr_complex *in_abs_1 = (const gr_complex*)input_items[3];
-	const float *in_cor = (const float*)input_items[4];
-	gr_complex *out = (gr_complex*)output_items[0];
-	gr_complex *out_1 = (gr_complex*)output_items[1];
+	const gr_complex *in   		= (const gr_complex*)input_items[0];
+	const gr_complex *in_1 		= (const gr_complex*)input_items[1];
+	const gr_complex *in_abs	= (const gr_complex*)input_items[2];
+	const gr_complex *in_abs_1 	= (const gr_complex*)input_items[3];
+	const float *in_cor 		= (const float*)input_items[4];
+	gr_complex *out 		= (gr_complex*)output_items[0];
+	gr_complex *out_1 		= (gr_complex*)output_items[1];
 
 int noutput = noutput_items;
 int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput_items[1])), std::min(ninput_items[4], ninput_items[3]));
@@ -79,7 +79,7 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 					d_freq_offset = arg(in_abs[i]) / 16;
 					d_freq_offset_1 = arg(in_abs_1[i]) / 16;
 					d_plateau = 0;
-		                        insert_tag(nitems_written(0), d_freq_offset, d_freq_offset_1, nitems_read(0) + i);
+		                        insert_tag(nitems_written(0), nitems_written(1), d_freq_offset, d_freq_offset_1, nitems_read(0) + i, nitems_read(1) + i);
 					dout << "SHORT Frame! State Search" << std::endl;
 					break;
 				}
@@ -108,7 +108,7 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 					d_plateau = 0;
 					d_freq_offset = arg(in_abs[o]) / 16;
 					d_freq_offset_1 = arg(in_abs_1[o]) / 16;
-					insert_tag(nitems_written(0) + o, d_freq_offset, d_freq_offset_1, nitems_read(0) + o);
+					insert_tag(nitems_written(0) + o, nitems_written(1) + o, d_freq_offset, d_freq_offset_1, nitems_read(0) + o, nitems_read(1) + o);
 					dout << "SHORT Frame! State Copy" << std::endl;
 					break;
 				}
@@ -138,15 +138,17 @@ int ninput = std::min(std::min(ninput_items[2] ,std::min(ninput_items[0], ninput
 	return 0;
 }
 
-void insert_tag(uint64_t item, double freq_offset, double freq_offset_1, uint64_t input_item) {
+void insert_tag(uint64_t item, uint64_t item_1, double freq_offset, double freq_offset_1, uint64_t input_item, uint64_t input_item_1) {
 	mylog(boost::format("frame start at in: %2% out: %1%") % item % input_item);
 
-	const pmt::pmt_t key = pmt::string_to_symbol("wifi_start");
-	const pmt::pmt_t value = pmt::from_double(freq_offset);
-	const pmt::pmt_t value_1 = pmt::from_double(freq_offset_1);
-	const pmt::pmt_t srcid = pmt::string_to_symbol(name());
-	add_item_tag(0, item, key, value, srcid);
-	add_item_tag(1, item, key, value_1, srcid);
+	const pmt::pmt_t key 		= pmt::string_to_symbol("wifi_start");
+	const pmt::pmt_t key_1 		= pmt::string_to_symbol("wifi_start");
+	const pmt::pmt_t value 		= pmt::from_double(freq_offset);
+	const pmt::pmt_t value_1 	= pmt::from_double(freq_offset_1);
+	const pmt::pmt_t srcid 		= pmt::string_to_symbol(name());
+	const pmt::pmt_t srcid_1 	= pmt::string_to_symbol(name());
+	add_item_tag(0, item,   key,   value,   srcid);
+	add_item_tag(1, item_1, key_1, value_1, srcid_1);
 }
 
 static std::vector<int> get_input_sizes(){

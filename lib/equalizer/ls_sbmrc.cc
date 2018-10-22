@@ -22,20 +22,18 @@
 
 using namespace gr::ieee802_11::equalizer_sbmrc;
 
-void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_oai, gr_complex *symbols_1, gr_complex *symbols_oai_1, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr_out, float *llr_b1, float *llr_b2, float *llr_sbmrc, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols, int llr_type) {
+void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_oai, gr_complex *symbols_1, gr_complex *symbols_oai_1, float *noise_vec, int scaling, int threshold, float *llr_out_b1, float *llr_out_b2, float *llr_out, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols, int llr_type) {
 
 	//std::cout << "yo scaling is " << scaling << std::endl;
 	
 	if(n == 0) 
 	{
-		std::memcpy(d_H_soft, in, 64 * sizeof(gr_complex)); 
+		std::memcpy(d_H_soft,   in,   64 * sizeof(gr_complex)); 
 		std::memcpy(d_H_soft_1, in_1, 64 * sizeof(gr_complex)); 
 	} 
 	else if(n == 1) 
 	{ 
                 double signal = 0;
-//                double norm_lts1 = 0;
-//                double norm_lts2 = 0;
                 double noise = 0;
 		int start = 30; // start sub carrier of interference-1
 		int stop = 36; // stop subcarrier of interference-1
@@ -63,17 +61,17 @@ void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_comple
 			noise_non_interf_1 += (std::pow(std::abs(d_H_soft_1[i] - in_1[i]), 2)); 
 			}
 
-			d_H_soft[i] += in[i]; 
+			d_H_soft[i]   += in[i]; 
 			d_H_soft_1[i] += in_1[i]; 
 
-			d_H_soft[i] /= LONG_sbmrc[i] * gr_complex(2, 0); 
+			d_H_soft[i]   /= LONG_sbmrc[i] * gr_complex(2, 0); 
 			d_H_soft_1[i] /= LONG_sbmrc[i] * gr_complex(2, 0); 
 
-                        d_temp += std::pow(std::abs(d_H_soft[i]),2);
-                        d_temp_1 += std::pow(std::abs(d_H_soft_1[i]),2);
+                        d_temp    += std::pow(std::abs(d_H_soft[i]),2);
+                        d_temp_1  += std::pow(std::abs(d_H_soft_1[i]),2);
 
 		}
-                d_temp = d_temp/64;
+                d_temp   = d_temp/64;
                 d_temp_1 = d_temp_1/64;
                 d_snr_soft = 0;
 //FIXME		d_snr_soft = 10 * std::log10(signal / noise / 2);
@@ -144,15 +142,14 @@ d_NLR_1 = ((noise_interf_1 /(2*(stop-start+1)))/(noise_non_interf_1 /(2*(52-stop
 		{
 			if( (i == 11) || (i == 25) || (i == 32) || (i == 39) || (i == 53) || (i < 6) || ( i > 58)) 				{ 
 				continue;
-			} else {
-			symbols[c]   = in[i]   / d_H_soft[i]; // equalize them with chest d_H
-			symbols_1[c] = in_1[i] / d_H_soft_1[i]; // equalize them with chest d_H
-                                //bits[c] = mod_soft->decision_maker(&symbols[c]); // hard bits
-				// uncomment above to get hard bits also 
-				bits[c] = 0;
-			temp_symbols[c]   = 7*real(in[i]   * conj(d_H_soft[i]))  /d_temp;
-			temp_symbols_1[c] = 7*real(in_1[i] * conj(d_H_soft_1[i]))/d_temp_1;
-				//symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
+			} else 
+{
+symbols[c]   = in[i]   / d_H_soft[i]; // equalize them with chest d_H
+symbols_1[c] = in_1[i] / d_H_soft_1[i]; // equalize them with chest d_H
+
+temp_symbols[c]   = 7*real(in[i]   * conj(d_H_soft[i]))  /d_temp;
+temp_symbols_1[c] = 7*real(in_1[i] * conj(d_H_soft_1[i]))/d_temp_1;
+//symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
 symbols_oai[c]   = (in[i]   * conj(d_H_soft[i]))   /gr_complex(std::pow(std::abs(d_H_soft[i]),   2),0);
 symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs(d_H_soft_1[i]), 2),0);
 /* the commented section valid only when interference detection happens*/                      
@@ -172,16 +169,33 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 
 /*when there is deterministic interference, the code below is applicable */
   //llr[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
-              llr_b1[c] = (temp_symbols[c]/d_N_soft_conv[i]);
-	      llr_b2[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
-	      llr_sbmrc[c] = llr_b1[c] + llr_b2[c];
-              llr_out[c] = llr_sbmrc[c];
-                                
+              if (n == 2)
+		{
+			llr_out_b1[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
+	                llr_out_b2[c] 	= (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+			//llr_out_b2[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
+			llr_out[c] 	= llr_out_b1[c] + llr_out_b2[c];
+		}
+	      if (n > 2)	
+		{
+              		llr_out_b1[c] = (temp_symbols[c]/d_N_soft_conv[i]);
+	      		llr_out_b2[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+	      		//llr_out_b2[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
+
+			if (llr_type == 1) 
+				{llr_out[c] = llr_out_b1[c];}
+			if (llr_type == 2) 
+				{llr_out[c] = llr_out_b2[c];}
+			if (llr_type == 3) 
+				{llr_out[c] = llr_out_b1[c] + llr_out_b2[c];}
+		}
+
 				if(llr_out[c] > 7) 
 					llr_out[c] = 7; 
 				else if(llr_out[c] < -8) 
 					llr_out[c] = -8; 
 				else llr_out[c] = (float)llr_out[c]; 
+
 //std::cout << (temp_symbols[c]/d_N_soft_conv[i]) << "--" << (temp_symbols_1[c]/d_N_soft_conv_1[i]) << "--" << llr[c] <<std::endl;
  
 				 

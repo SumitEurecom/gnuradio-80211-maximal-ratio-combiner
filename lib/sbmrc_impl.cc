@@ -34,11 +34,10 @@ sbmrc::make(Equalizer_sbmrc algo, double freq, double bw, int scaling, int thres
 		(new sbmrc_impl(algo, freq, bw, scaling, threshold, log, debug));
 }
 
-
 sbmrc_impl::sbmrc_impl(Equalizer_sbmrc algo, double freq, double bw, int scaling, int threshold, bool log, bool debug) :
 	gr::block("sbmrc",
 			gr::io_signature::make2(2, 2, 64 * sizeof(gr_complex), 64 * sizeof(gr_complex)),
-			gr::io_signature::make2(2, 2, 48, 48 * sizeof(float))),
+			gr::io_signature::make3(3, 3, 48 * sizeof(float), 48 * sizeof(float), 48 * sizeof(float))),
 	d_current_symbol(0), d_log(log), d_debug(debug), d_equalizer(NULL),
 	d_freq(freq), d_bw(bw), d_scaling(scaling), d_threshold(threshold), d_frame_bytes(0), d_frame_symbols(0), 
 	d_freq_offset_from_synclong(0.0), d_freq_offset_from_synclong_1(0.0) {
@@ -128,19 +127,23 @@ sbmrc_impl::general_work (int noutput_items,
 
 	const gr_complex *in   = (const gr_complex *) input_items[0];
 	const gr_complex *in_1 = (const gr_complex *) input_items[1];
-	uint8_t *out           = (uint8_t *) output_items[0];
+	float *out             = (float *) output_items[0];
 	float *out1            = (float *) output_items[1];
+	float *out2            = (float *) output_items[2];
 
 	int i = 0;
 	int o = 0;
-	gr_complex symbols[48]; // equalized symbols 
-	gr_complex symbols_oai[48]; // equalized symbols method OAI 
+	gr_complex symbols[48]; // equalized symbols b1
+	gr_complex symbols_oai[48]; // equalized symbols method OAI b1
 
-	gr_complex symbols_1[48]; // equalized symbols 
-	gr_complex symbols_oai_1[48]; // equalized symbols method OAI 
+	gr_complex symbols_1[48]; // equalized symbols b2
+	gr_complex symbols_oai_1[48]; // equalized symbols method OAI b2
 
-	gr_complex current_symbol[64]; // unequalized symbols 
-	gr_complex current_symbol_1[64]; // unequalized symbols 
+	gr_complex symbols_2[48]; // equalized symbols bmrc
+	gr_complex symbols_oai_2[48]; // equalized symbols method OAI bmrc
+
+	gr_complex current_symbol[64]; // unequalized symbols b1
+	gr_complex current_symbol_1[64]; // unequalized symbols b2
 
 	float noise_vec[64]; // noise variance vector 
 
@@ -271,7 +274,7 @@ current_symbol_1[i] *= exp(gr_complex(0, 2*M_PI*d_current_symbol *80*(d_epsilon0
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		//std::cout << "scaling is " << d_scaling << std::endl;
 
-d_equalizer->equalize_sbmrc(current_symbol, current_symbol_1, d_current_symbol, symbols, symbols_oai, symbols_1, symbols_oai_1, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, llr_b1, llr_b2, llr_sbmrc, d_frame_mod, d_frame_symbols, llr_type);
+d_equalizer->equalize_sbmrc(current_symbol, current_symbol_1, d_current_symbol, symbols, symbols_oai, symbols_1, symbols_oai_1, noise_vec, d_scaling, d_threshold, out + o * 48, out1 + o * 48, out2 + o * 48, d_frame_mod, d_frame_symbols, llr_type);
 
 /*check point-2*/
 #ifdef llr_out_from_equalizer
@@ -287,47 +290,93 @@ std::cout << "----------------" << std::endl;
 #endif
 
 		// signal field
-		if(d_current_symbol == 2) { // 0 is lts1, 1 is lts2, 2 is SIGNAL
-		//s_decode_signal_field(out1 + o * 48);
-		/*
-		if(s_decode_signal_field(llr_b1))
-		{std::cout << "yo1" << std::endl;}
+if(d_current_symbol == 2) 
+	{ // 0 is lts1, 1 is lts2, 2 is SIGNAL
+		llr_type = 0;
+		b1Signal 	= s_decode_signal_field(out  + o * 48, 1);
+		b2Signal 	= s_decode_signal_field_1(out1 + o * 48, 2);
+		bmrcSignal 	= s_decode_signal_field_2(out2 + o * 48, 3);
+                
+		if (b1Signal && b2Signal) // when signal field good on both branches
+		{llr_type = 3; 
+		std::cout << b1Signal << "--" << b2Signal<<" -- choosing sbmrc" << std::endl;
+		} 
+		// choose performing mrc
+		else if (b1Signal && ~b2Signal) // if branch one detected
+ 		{llr_type = 1; 
+		std::cout << b1Signal << "--" << b2Signal<<" -- choosing b1" << std::endl;
+		} 
+		// choose branch 1
+		else if (~b1Signal && b2Signal) // if branch two detected
+ 		{llr_type = 2; 
+		std::cout << b1Signal << "--" << b2Signal<<" -- choosing b2" << std::endl;
+		} 
 		else
-		{std::cout << "no1" << std::endl;}
-		if(s_decode_signal_field(llr_b2))
-		{std::cout << "yo2" << std::endl;}
-		else
-		{std::cout << "no2" << std::endl;}
-		*/
-		if(s_decode_signal_field(out1 + o * 48)) // now it uses soft bits for decoding SIGNAL field
-		//if(decode_signal_field(out + o * 48)) 
-			   
+ 		{
+		std::cout << " No branch SIGNAL decoded" << std::endl;
+		} 
+		// choose branch 2 
+
+if(b1Signal) // now it uses soft bits for decoding SIGNAL field
 		{
  
  //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
-			pmt::pmt_t dict = pmt::make_dict();
-			dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
-			dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
-			dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_sbmrc()));
-			dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
-			dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
-				add_item_tag(0, nitems_written(0) + o,
+	pmt::pmt_t dict = pmt::make_dict();
+	dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
+	dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
+	dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_sbmrc()));
+	dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
+	dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
+						add_item_tag(0, nitems_written(0) + o,
 						pmt::string_to_symbol("wifi_start"),
 						dict,
 						pmt::string_to_symbol(alias()));
-				add_item_tag(1, nitems_written(0) + o,
-						pmt::string_to_symbol("wifi_start"),
-						dict,
-						pmt::string_to_symbol(alias()));
-			}
 		}
 
-		if(d_current_symbol > 2) {
+if(b2Signal) // now it uses soft bits for decoding SIGNAL field
+		{
+ 
+ //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
+	pmt::pmt_t dict = pmt::make_dict();
+	dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
+	dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
+	dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_sbmrc()));
+	dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
+	dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong_1));
+						add_item_tag(1, nitems_written(1) + o,
+						pmt::string_to_symbol("wifi_start"),
+						dict,
+						pmt::string_to_symbol(alias()));
+		}
+
+if(bmrcSignal) // now it uses soft bits for decoding SIGNAL field
+		{
+ 
+ //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
+	pmt::pmt_t dict = pmt::make_dict();
+	dict = pmt::dict_add(dict, pmt::mp("frame_bytes"), pmt::from_uint64(d_frame_bytes));
+	dict = pmt::dict_add(dict, pmt::mp("encoding"), pmt::from_uint64(d_frame_encoding));
+	dict = pmt::dict_add(dict, pmt::mp("snr"), pmt::from_double(d_equalizer->get_snr_sbmrc()));
+	dict = pmt::dict_add(dict, pmt::mp("freq"), pmt::from_double(d_freq));
+	dict = pmt::dict_add(dict, pmt::mp("freq_offset"), pmt::from_double(d_freq_offset_from_synclong));
+						add_item_tag(2, nitems_written(2) + o,
+						pmt::string_to_symbol("wifi_start"),
+						dict,
+						pmt::string_to_symbol(alias()));
+		}
+
+
+
+
+	}
+
+if(d_current_symbol > 2) 
+                {
                 	o++;
 			pmt::pmt_t pdu = pmt::make_dict();
 			pmt::pmt_t pdu1 = pmt::make_dict();
-			message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols_oai)));
-			message_port_pub(pmt::mp("noise_vec"), pmt::cons(pmt::make_dict(), pmt::init_f32vector(64, noise_vec)));
+	message_port_pub(pmt::mp("symbols"), pmt::cons(pmt::make_dict(), pmt::init_c32vector(48, symbols_oai)));
+	message_port_pub(pmt::mp("noise_vec"), pmt::cons(pmt::make_dict(), pmt::init_f32vector(64, noise_vec)));
 
 		}
 
@@ -340,6 +389,7 @@ std::cout << "----------------" << std::endl;
 	return o;
 }
 
+/*
 bool
 sbmrc_impl::decode_signal_field(uint8_t *rx_bits) {
 //>std::cout << "SIGNAL! -->" <<  d_current_symbol << std::endl;
@@ -352,9 +402,8 @@ sbmrc_impl::decode_signal_field(uint8_t *rx_bits) {
 
 	return parse_signal(decoded_bits);
 }
-
-bool
-sbmrc_impl::s_decode_signal_field(float *rx_scaled_llr) {
+*/
+bool sbmrc_impl::s_decode_signal_field(float *rx_scaled_llr, int branch_idx) {
 /*
 	for(int i = 0; i < 48; i++)
 	{
@@ -383,7 +432,76 @@ sbmrc_impl::s_decode_signal_field(float *rx_scaled_llr) {
 */
 
 
-	return parse_signal(s_decoded_bits); // either use s_decoded or s_dcoded_bytes
+	return parse_signal(s_decoded_bits, branch_idx); // either use s_decoded or s_dcoded_bytes
+	//return true;	
+
+}
+
+
+bool sbmrc_impl::s_decode_signal_field_1(float *rx_scaled_llr, int branch_idx) {
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "fllr," << i << "," << (int)(rx_scaled_llr)[i] << "," << (int)(rx_bits)[i]<< std::endl;  
+	}
+*/
+
+	s_deinterleave(rx_scaled_llr);
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "dlv," << i << "," << (int)(s_deinterleaved)[i] << "," << (int)(d_deinterleaved)[i]<< std::endl;  
+	}
+*/
+	memset(s_decoded_bytes,0,sizeof(s_decoded_bytes)); // 24 or 3 ? 
+	memset(s_decoded_bits,0,sizeof(s_decoded_bits)); // 24 
+        s_decoder_1.oai_decode(s_deinterleaved,s_decoded_bytes,s_decoded_bits,24);
+
+/*  
+        for(int i = 0; i < 8; i++)
+	{
+		s_decoded[7-i] = (s_decoded_bytes[0] >> (7-i)) & 0x01;
+		s_decoded[7-i+8] = (s_decoded_bytes[1] >> (7-i)) & 0x01;
+ 		s_decoded[7-i+16] = (s_decoded_bytes[2] >> (7-i)) & 0x01;
+	}
+*/
+
+
+	return parse_signal(s_decoded_bits, branch_idx); // either use s_decoded or s_dcoded_bytes
+	//return true;	
+
+}
+
+bool sbmrc_impl::s_decode_signal_field_2(float *rx_scaled_llr, int branch_idx) {
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "fllr," << i << "," << (int)(rx_scaled_llr)[i] << "," << (int)(rx_bits)[i]<< std::endl;  
+	}
+*/
+
+	s_deinterleave(rx_scaled_llr);
+/*
+	for(int i = 0; i < 48; i++)
+	{
+	std::cout << "dlv," << i << "," << (int)(s_deinterleaved)[i] << "," << (int)(d_deinterleaved)[i]<< std::endl;  
+	}
+*/
+	memset(s_decoded_bytes,0,sizeof(s_decoded_bytes)); // 24 or 3 ? 
+	memset(s_decoded_bits,0,sizeof(s_decoded_bits)); // 24 
+        s_decoder_2.oai_decode(s_deinterleaved,s_decoded_bytes,s_decoded_bits,24);
+
+/*  
+        for(int i = 0; i < 8; i++)
+	{
+		s_decoded[7-i] = (s_decoded_bytes[0] >> (7-i)) & 0x01;
+		s_decoded[7-i+8] = (s_decoded_bytes[1] >> (7-i)) & 0x01;
+ 		s_decoded[7-i+16] = (s_decoded_bytes[2] >> (7-i)) & 0x01;
+	}
+*/
+
+
+	return parse_signal(s_decoded_bits, branch_idx); // either use s_decoded or s_dcoded_bytes
 	//return true;	
 
 }
@@ -412,7 +530,7 @@ sbmrc_impl::s_deinterleave(float *rx_scaled_llr) {
 }
 
 bool
-sbmrc_impl::parse_signal(uint8_t *decoded_bits) {
+sbmrc_impl::parse_signal(uint8_t *decoded_bits, int branch_idx) {
 
 	int r = 0;
 	d_frame_bytes = 0;
@@ -431,7 +549,7 @@ sbmrc_impl::parse_signal(uint8_t *decoded_bits) {
 	}
 
 	if(parity != decoded_bits[17]) {
-		dout << "SIGNAL: wrong parity" << std::endl;
+		//std::cout << "SIGNAL: wrong parity->>" << branch_idx <<std::endl;
 		//std::cout << "SIGNAL: wrong parity" << std::endl;
 		return false;
 	}
@@ -442,52 +560,52 @@ sbmrc_impl::parse_signal(uint8_t *decoded_bits) {
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 24);
                 //std::cout << d_frame_symbols << std::endl;
 		d_frame_mod = d_bpsk;
-		dout << "Encoding: 3 Mbit/s   ";
+		std::cout << "Encoding: 3 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 15:
 		d_frame_encoding = 1;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 36);
 		d_frame_mod = d_bpsk;
-		dout << "Encoding: 4.5 Mbit/s   ";
+		//std::cout << "Encoding: 4.5 Mbit/s ->>" << branch_idx <<std::endl;
 		break;
 	case 10:
 		d_frame_encoding = 2;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 48);
 		d_frame_mod = d_qpsk;
-		dout << "Encoding: 6 Mbit/s   ";
+		//std::cout << "Encoding: 6 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 14:
 		d_frame_encoding = 3;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 72);
 		d_frame_mod = d_qpsk;
-		dout << "Encoding: 9 Mbit/s   ";
+		//std::cout << "Encoding: 9 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 9:
 		d_frame_encoding = 4;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 96);
 		d_frame_mod = d_16qam;
-		dout << "Encoding: 12 Mbit/s   ";
+		//std::cout << "Encoding: 12 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 13:
 		d_frame_encoding = 5;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 144);
 		d_frame_mod = d_16qam;
-		dout << "Encoding: 18 Mbit/s   ";
+		//std::cout << "Encoding: 18 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 8:
 		d_frame_encoding = 6;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 192);
 		d_frame_mod = d_64qam;
-		dout << "Encoding: 24 Mbit/s   ";
+		//std::cout << "Encoding: 24 Mbit/s ->>" << branch_idx <<std::endl;
 		break;
 	case 12:
 		d_frame_encoding = 7;
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 216);
 		d_frame_mod = d_64qam;
-		dout << "Encoding: 27 Mbit/s   ";
+		//std::cout << "Encoding: 27 Mbit/s ->>" << branch_idx <<std::endl;
 		break;
 	default:
-		dout << "unknown encoding" << std::endl;
+		//std::cout << "unknown encoding->>" << branch_idx <<std::endl;
 		return false;
 	}
 

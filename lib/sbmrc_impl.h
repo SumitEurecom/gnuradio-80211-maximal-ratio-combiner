@@ -47,9 +47,11 @@ public:
 			gr_vector_void_star &output_items);
 
 private:
-	bool parse_signal(uint8_t *signal);
+	bool parse_signal(uint8_t *signal, int branch_idx);
 	bool decode_signal_field(uint8_t *rx_bits);
-	bool s_decode_signal_field(float *rx_scaled_llr); // rx_scaled_llr are coming from ls_soft.cc
+	bool s_decode_signal_field(float *rx_scaled_llr, int branch_idx); // rx_scaled_llr are coming from ls_soft.cc
+	bool s_decode_signal_field_1(float *rx_scaled_llr, int branch_idx); // rx_scaled_llr are coming from ls_soft.cc
+	bool s_decode_signal_field_2(float *rx_scaled_llr, int branch_idx); // rx_scaled_llr are coming from ls_soft.cc	
 
 	void deinterleave(uint8_t *rx_bits);
 	void s_deinterleave(float *rx_scaled_llr);
@@ -63,6 +65,8 @@ private:
 	int  d_current_symbol;
 	viterbi_decoder d_decoder;
 	soft_viterbi_decoder s_decoder; // soft decision decoder 
+	soft_viterbi_decoder s_decoder_1; // soft decision decoder 
+	soft_viterbi_decoder s_decoder_2; // soft decision decoder 
 
 	// freq offset
 	double d_freq;  // Hz
@@ -89,11 +93,9 @@ private:
 	uint8_t s_decoded[24]; // becz GR writes 1 bit in 1 byte field: only for signal field 24 bits 
 	gr_complex symbols[48];
 	float noise_vec[64];
-	float llr_b1[48];
-	float llr_b2[48];
-	float llr_sbmrc[48];
 	int llr_type;
-
+	int b1, b2;
+	bool b1Signal, b2Signal, bmrcSignal; 
 	boost::shared_ptr<gr::digital::constellation> d_frame_mod;
 	constellation_bpsk::sptr d_bpsk;
 	constellation_qpsk::sptr d_qpsk;
