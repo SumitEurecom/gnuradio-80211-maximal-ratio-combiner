@@ -89,6 +89,10 @@ private:
 	uint8_t s_decoded[24]; // becz GR writes 1 bit in 1 byte field: only for signal field 24 bits 
 	gr_complex symbols[48];
 	float noise_vec[64];
+	float llr_b1[48];
+	float llr_b2[48];
+	float llr_sbmrc[48];
+	int llr_type;
 
 	boost::shared_ptr<gr::digital::constellation> d_frame_mod;
 	constellation_bpsk::sptr d_bpsk;

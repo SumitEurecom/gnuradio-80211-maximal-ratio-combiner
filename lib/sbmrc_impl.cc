@@ -41,7 +41,7 @@ sbmrc_impl::sbmrc_impl(Equalizer_sbmrc algo, double freq, double bw, int scaling
 			gr::io_signature::make2(2, 2, 48, 48 * sizeof(float))),
 	d_current_symbol(0), d_log(log), d_debug(debug), d_equalizer(NULL),
 	d_freq(freq), d_bw(bw), d_scaling(scaling), d_threshold(threshold), d_frame_bytes(0), d_frame_symbols(0), 
-	d_freq_offset_from_synclong(0.0) {
+	d_freq_offset_from_synclong(0.0), d_freq_offset_from_synclong_1(0.0) {
 
 	message_port_register_out(pmt::mp("symbols"));
 	message_port_register_out(pmt::mp("noise_vec"));
@@ -135,10 +135,13 @@ sbmrc_impl::general_work (int noutput_items,
 	int o = 0;
 	gr_complex symbols[48]; // equalized symbols 
 	gr_complex symbols_oai[48]; // equalized symbols method OAI 
+
 	gr_complex symbols_1[48]; // equalized symbols 
 	gr_complex symbols_oai_1[48]; // equalized symbols method OAI 
+
 	gr_complex current_symbol[64]; // unequalized symbols 
 	gr_complex current_symbol_1[64]; // unequalized symbols 
+
 	float noise_vec[64]; // noise variance vector 
 
 	dout << "FRAME EQUALIZER: input " << ninput_items[0] << "  output " << noutput_items << std::endl;
@@ -153,9 +156,9 @@ sbmrc_impl::general_work (int noutput_items,
 
 		// new frame
 		if(tags.size() && tags_1.size()) 
-{ // if got the tag wifi_start, time to decode SIGNAL field
+	{ // if got the tag wifi_start, time to decode SIGNAL field
         d_current_symbol = 0; // counter index for parsing the symbols in the current frame
-	d_frame_symbols  = 0; // it is total no of data ofdm symbols in that frame, its populated after decoding SIGNAL field
+	d_frame_symbols  = 0; // it is total no of data ofdm symbols in that frame, its populated after 				decoding SIGNAL field
 	d_frame_mod = d_bpsk; // SIGNAL field is bpsk
 	d_freq_offset_from_synclong   = pmt::to_double(tags.front().value)   * d_bw / (2 * M_PI);
 	d_freq_offset_from_synclong_1 = pmt::to_double(tags_1.front().value) * d_bw / (2 * M_PI);
@@ -165,7 +168,7 @@ sbmrc_impl::general_work (int noutput_items,
 	d_er_1 = 0;
         dout << "epsilon: " << d_epsilon0 << std::endl;
 		
-}
+	}
 		// not interesting -> skip
 		if(d_current_symbol > (d_frame_symbols + 2)) { // d_frame_symbols + lts1 + lts2
 		//>std::cout << "skipping -- symInd--" << d_current_symbol << std::endl;
@@ -267,7 +270,8 @@ current_symbol_1[i] *= exp(gr_complex(0, 2*M_PI*d_current_symbol *80*(d_epsilon0
 		// do equalization
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		//std::cout << "scaling is " << d_scaling << std::endl;
-d_equalizer->equalize_sbmrc(current_symbol, current_symbol_1, d_current_symbol, symbols, symbols_oai, symbols_1, symbols_oai_1, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+
+d_equalizer->equalize_sbmrc(current_symbol, current_symbol_1, d_current_symbol, symbols, symbols_oai, symbols_1, symbols_oai_1, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, llr_b1, llr_b2, llr_sbmrc, d_frame_mod, d_frame_symbols, llr_type);
 
 /*check point-2*/
 #ifdef llr_out_from_equalizer
@@ -285,6 +289,16 @@ std::cout << "----------------" << std::endl;
 		// signal field
 		if(d_current_symbol == 2) { // 0 is lts1, 1 is lts2, 2 is SIGNAL
 		//s_decode_signal_field(out1 + o * 48);
+		/*
+		if(s_decode_signal_field(llr_b1))
+		{std::cout << "yo1" << std::endl;}
+		else
+		{std::cout << "no1" << std::endl;}
+		if(s_decode_signal_field(llr_b2))
+		{std::cout << "yo2" << std::endl;}
+		else
+		{std::cout << "no2" << std::endl;}
+		*/
 		if(s_decode_signal_field(out1 + o * 48)) // now it uses soft bits for decoding SIGNAL field
 		//if(decode_signal_field(out + o * 48)) 
 			   

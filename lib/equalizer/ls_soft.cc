@@ -36,8 +36,8 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
                 double norm_lts1 = 0;
                 double norm_lts2 = 0;
                 double noise = 0;
-		int start = 27; // start sub carrier of interference-1
-		int stop = 39; // stop subcarrier of interference-1
+		int start = 30; // start sub carrier of interference-1
+		int stop = 36; // stop subcarrier of interference-1
 		double noise_interf = 0; // local noise variance of interfered-1 band
 		double noise_non_interf = 0; // local noise variance of non-interfered-1 band
 		// calculation loop	
@@ -160,7 +160,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 				if(scaling)
 				{
 					{
-						if(c >= 19 && c <= 30) {llr[c] = 0;}
+						if(c >= 22 && c <= 27) {llr[c] = 0;}
 					}			
 				}
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);

@@ -22,7 +22,7 @@
 
 using namespace gr::ieee802_11::equalizer_sbmrc;
 
-void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_oai, gr_complex *symbols_1, gr_complex *symbols_oai_1, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_complex *symbols, gr_complex *symbols_oai, gr_complex *symbols_1, gr_complex *symbols_oai_1, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr_out, float *llr_b1, float *llr_b2, float *llr_sbmrc, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols, int llr_type) {
 
 	//std::cout << "yo scaling is " << scaling << std::endl;
 	
@@ -37,8 +37,8 @@ void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_comple
 //                double norm_lts1 = 0;
 //                double norm_lts2 = 0;
                 double noise = 0;
-		int start = 27; // start sub carrier of interference-1
-		int stop = 39; // stop subcarrier of interference-1
+		int start = 30; // start sub carrier of interference-1
+		int stop = 36; // stop subcarrier of interference-1
 		double noise_interf = 0; // local noise variance of interfered-1 band
 		double noise_interf_1 = 0; // local noise variance of interfered-1 band
 		double noise_non_interf = 0; // local noise variance of non-interfered-1 band
@@ -172,14 +172,16 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 
 /*when there is deterministic interference, the code below is applicable */
   //llr[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
-                
-              llr[c] = (temp_symbols[c]/d_N_soft_conv[i]) + (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+              llr_b1[c] = (temp_symbols[c]/d_N_soft_conv[i]);
+	      llr_b2[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+	      llr_sbmrc[c] = llr_b1[c] + llr_b2[c];
+              llr_out[c] = llr_sbmrc[c];
                                 
-				if(llr[c] > 7) 
-					llr[c] = 7; 
-				else if(llr[c] < -8) 
-					llr[c] = -8; 
-				else llr[c] = (float)llr[c]; 
+				if(llr_out[c] > 7) 
+					llr_out[c] = 7; 
+				else if(llr_out[c] < -8) 
+					llr_out[c] = -8; 
+				else llr_out[c] = (float)llr_out[c]; 
 //std::cout << (temp_symbols[c]/d_N_soft_conv[i]) << "--" << (temp_symbols_1[c]/d_N_soft_conv_1[i]) << "--" << llr[c] <<std::endl;
  
 				 
@@ -187,7 +189,7 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 				if(scaling)
 				{
 					{
-						if(c >= 19 && c <= 30) {llr[c] = 0;}
+						if(c >= 22 && c <= 27) {llr_out[c] = 0;}
 					}			
 				}
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
