@@ -31,7 +31,7 @@ class soft_frame_equalizer_impl : virtual public soft_frame_equalizer
 {
 
 public:
-	soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, bool log, bool debug);
+	soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, int start_sub, int stop_sub, bool log, bool debug);
 	~soft_frame_equalizer_impl();
 
 	void set_algorithm(Equalizer_soft algo);
@@ -39,6 +39,8 @@ public:
 	void set_frequency(double freq);
 	void set_scaling(int scaling);
 	void set_threshold(int threshold);
+	void set_start_sub(int start_sub);
+	void set_stop_sub(int stop_sub);
 
 	void forecast (int noutput_items, gr_vector_int &ninput_items_required);
 	int general_work(int noutput_items,
@@ -71,6 +73,8 @@ private:
 	double d_epsilon0;
 	int d_scaling;
 	int d_threshold;
+	int d_start_sub;
+	int d_stop_sub;
 	gr_complex d_prev_pilots[4];
 
 	int  d_frame_bytes;

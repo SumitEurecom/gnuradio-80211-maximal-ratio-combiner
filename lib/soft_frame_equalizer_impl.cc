@@ -29,18 +29,18 @@ namespace gr {
 namespace ieee802_11 {
 
 soft_frame_equalizer::sptr
-soft_frame_equalizer::make(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, bool log, bool debug) {
+soft_frame_equalizer::make(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, int start_sub, int stop_sub, bool log, bool debug) {
 	return gnuradio::get_initial_sptr
-		(new soft_frame_equalizer_impl(algo, freq, bw, scaling, threshold, log, debug));
+	(new soft_frame_equalizer_impl(algo, freq, bw, scaling, threshold, start_sub, stop_sub, log, debug));
 }
 
 
-soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, bool log, bool debug) :
+soft_frame_equalizer_impl::soft_frame_equalizer_impl(Equalizer_soft algo, double freq, double bw, int scaling, int threshold, int start_sub, int stop_sub, bool log, bool debug) :
 	gr::block("soft_frame_equalizer",
 			gr::io_signature::make(1, 1, 64 * sizeof(gr_complex)),
 			gr::io_signature::make2(2, 2, 48, 48 * sizeof(float))),
 	d_current_symbol(0), d_log(log), d_debug(debug), d_equalizer(NULL),
-	d_freq(freq), d_bw(bw), d_scaling(scaling), d_threshold(threshold), d_frame_bytes(0), d_frame_symbols(0), 
+	d_freq(freq), d_bw(bw), d_scaling(scaling), d_threshold(threshold), d_frame_bytes(0), d_frame_symbols(0), d_start_sub(start_sub), d_stop_sub(stop_sub), 
 	d_freq_offset_from_synclong(0.0) {
 
 	message_port_register_out(pmt::mp("symbols"));
@@ -103,6 +103,16 @@ soft_frame_equalizer_impl::set_scaling(int scaling) {
 void
 soft_frame_equalizer_impl::set_threshold(int threshold) {
 	d_threshold = threshold;
+}
+
+void
+soft_frame_equalizer_impl::set_start_sub(int start_sub) {
+	d_start_sub = start_sub;
+}
+
+void
+soft_frame_equalizer_impl::set_stop_sub(int stop_sub) {
+	d_stop_sub = stop_sub;
 }
 
 void
@@ -223,7 +233,7 @@ soft_frame_equalizer_impl::general_work (int noutput_items,
                 //>std::cout << "equalizer called for symind-- " << d_current_symbol << std::endl; 
 		//std::cout << "scaling is " << d_scaling << std::endl;
 		d_equalizer->equalize_soft(current_symbol, d_current_symbol,
-				symbols, symbols_oai, noise_vec, d_scaling, d_threshold, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
+				symbols, symbols_oai, noise_vec, d_scaling, d_threshold, d_start_sub, d_stop_sub, out + o * 48,out1 + o * 48, d_frame_mod, d_frame_symbols);
 
 /*check point-2*/
 #ifdef llr_out_from_equalizer

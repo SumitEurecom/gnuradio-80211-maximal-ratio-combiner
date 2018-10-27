@@ -89,11 +89,11 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 	{
 		std::sort(d_tags.begin(),   d_tags.end(),   gr::tag_t::offset_compare);
 		std::sort(d_tags_1.begin(), d_tags_1.end(), gr::tag_t::offset_compare);
-
+//FIXME do we need to see offset on both the branches! they are same. 
 		const uint64_t offset 	= d_tags.front().offset;
 		const uint64_t offset_1 = d_tags_1.front().offset;
 		//std::cout << "offset " << offset << " offset_1 " << offset_1 << std::endl;
-
+//FIXME do we need to do a double comparison, they are same! 
 		if((offset > nread) && (offset_1 > nread_1) ) 
 		{
 			ninput 		= offset - nread;
@@ -109,6 +109,7 @@ int general_work (int noutput, gr_vector_int& ninput_items,
 			}
 			d_freq_offset_short 	= pmt::to_double(d_tags.front().value);
 			d_freq_offset_short_1 	= pmt::to_double(d_tags_1.front().value);
+//std::cout << d_freq_offset_short << "....." << d_freq_offset_short_1 << std::endl;
 		}
 	}
 

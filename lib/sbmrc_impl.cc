@@ -292,32 +292,39 @@ std::cout << "----------------" << std::endl;
 		// signal field
 if(d_current_symbol == 2) 
 	{ // 0 is lts1, 1 is lts2, 2 is SIGNAL
-		llr_type = 0;
-		b1Signal 	= s_decode_signal_field(out  + o * 48, 1);
-		b2Signal 	= s_decode_signal_field_1(out1 + o * 48, 2);
-		bmrcSignal 	= s_decode_signal_field_2(out2 + o * 48, 3);
+		llr_type 	= 0;
+		b1Signal 	= false;
+		b2Signal 	= false;
+		bmrcSignal 	= false;
+		b1Signal 	= s_decode_signal_field(out    + o * 48, 1); // b1
+		b2Signal 	= s_decode_signal_field_1(out1 + o * 48, 2); // b2
+		bmrcSignal 	= s_decode_signal_field_2(out2 + o * 48, 3); // mrc
                 
+		llr_type = 3; 		
+		
 		if (b1Signal && b2Signal) // when signal field good on both branches
-		{llr_type = 3; 
-		std::cout << b1Signal << "--" << b2Signal<<" -- choosing sbmrc" << std::endl;
+		{
+		llr_type = 3; 
+		//std::cout << b1Signal << "--" << b2Signal<<" -- choosing sbmrc" << std::endl;
 		} 
 		// choose performing mrc
 		else if (b1Signal && ~b2Signal) // if branch one detected
- 		{llr_type = 1; 
-		std::cout << b1Signal << "--" << b2Signal<<" -- choosing b1" << std::endl;
+ 		{llr_type = 3; 
+		//std::cout << b1Signal << "--" << b2Signal<<" -- choosing b1" << std::endl;
 		} 
 		// choose branch 1
 		else if (~b1Signal && b2Signal) // if branch two detected
- 		{llr_type = 2; 
-		std::cout << b1Signal << "--" << b2Signal<<" -- choosing b2" << std::endl;
+ 		{llr_type = 3; 
+		//std::cout << b1Signal << "--" << b2Signal<<" -- choosing b2" << std::endl;
 		} 
 		else
  		{
-		std::cout << " No branch SIGNAL decoded" << std::endl;
-		} 
+		//std::cout << " No branch SIGNAL decoded" << std::endl;
+		}
+ 
 		// choose branch 2 
 
-if(b1Signal) // now it uses soft bits for decoding SIGNAL field
+if(b1Signal) // 
 		{
  
  //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
@@ -349,7 +356,7 @@ if(b2Signal) // now it uses soft bits for decoding SIGNAL field
 						pmt::string_to_symbol(alias()));
 		}
 
-if(bmrcSignal) // now it uses soft bits for decoding SIGNAL field
+if(llr_type == 3) // now it uses soft bits for decoding SIGNAL field
 		{
  
  //>std::cout << "decoded the signal field symInd--" << d_current_symbol << std::endl;
@@ -560,7 +567,8 @@ sbmrc_impl::parse_signal(uint8_t *decoded_bits, int branch_idx) {
 		d_frame_symbols = (int) ceil((16 + 8 * d_frame_bytes + 6) / (double) 24);
                 //std::cout << d_frame_symbols << std::endl;
 		d_frame_mod = d_bpsk;
-		std::cout << "Encoding: 3 Mbit/s->>" << branch_idx <<std::endl;
+                //if(branch_idx == 3)
+		//std::cout << "Encoding: 3 Mbit/s->>" << branch_idx <<std::endl;
 		break;
 	case 15:
 		d_frame_encoding = 1;

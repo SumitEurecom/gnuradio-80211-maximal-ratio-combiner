@@ -72,7 +72,9 @@ void ls_sbmrc::equalize_sbmrc(gr_complex *in, gr_complex *in_1, int n, gr_comple
 
 		}
                 d_temp   = d_temp/64;
+d_temp = 1;
                 d_temp_1 = d_temp_1/64;
+d_temp_1 = 1;
                 d_snr_soft = 0;
 //FIXME		d_snr_soft = 10 * std::log10(signal / noise / 2);
 
@@ -147,8 +149,12 @@ d_NLR_1 = ((noise_interf_1 /(2*(stop-start+1)))/(noise_non_interf_1 /(2*(52-stop
 symbols[c]   = in[i]   / d_H_soft[i]; // equalize them with chest d_H
 symbols_1[c] = in_1[i] / d_H_soft_1[i]; // equalize them with chest d_H
 
-temp_symbols[c]   = 7*real(in[i]   * conj(d_H_soft[i]))  /d_temp;
-temp_symbols_1[c] = 7*real(in_1[i] * conj(d_H_soft_1[i]))/d_temp_1;
+//temp_symbols[c]   = 7*real(in[i]   * conj(d_H_soft[i]))  /d_temp;
+//temp_symbols_1[c] = 7*real(in_1[i] * conj(d_H_soft_1[i]))/d_temp_1;
+
+temp_symbols[c]   = 7*real(in[i]   * conj(d_H_soft[i]));
+temp_symbols_1[c] = 7*real(in_1[i] * conj(d_H_soft_1[i]));
+
 //symbols_oai[c] = (in[i] * conj(d_H_soft[i]))/gr_complex(d_temp,0);
 symbols_oai[c]   = (in[i]   * conj(d_H_soft[i]))   /gr_complex(std::pow(std::abs(d_H_soft[i]),   2),0);
 symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs(d_H_soft_1[i]), 2),0);
@@ -171,15 +177,18 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
   //llr[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
               if (n == 2)
 		{
-			llr_out_b1[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
-	                llr_out_b2[c] 	= (temp_symbols_1[c]/d_N_soft_conv_1[i]);
-			//llr_out_b2[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
-			llr_out[c] 	= llr_out_b1[c] + llr_out_b2[c];
+			//llr_out_b1[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
+			llr_out_b1[c] 	= (temp_symbols[c]  /d_temp);
+	                //llr_out_b2[c] 	= (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+			llr_out_b2[c] 	= (temp_symbols_1[c]/d_temp_1);
+			llr_out[c] 	= (temp_symbols[c] + temp_symbols_1[c])/(d_temp + d_temp_1);
 		}
 	      if (n > 2)	
 		{
-              		llr_out_b1[c] = (temp_symbols[c]/d_N_soft_conv[i]);
-	      		llr_out_b2[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+              		//llr_out_b1[c] = (temp_symbols[c]/d_N_soft_conv[i]);
+			llr_out_b1[c] 	= (temp_symbols[c]  /d_temp);
+	      		//llr_out_b2[c] = (temp_symbols_1[c]/d_N_soft_conv_1[i]);
+			llr_out_b2[c] 	= (temp_symbols_1[c]/d_temp_1);
 	      		//llr_out_b2[c] 	= (temp_symbols[c]/d_N_soft_conv[i]);
 
 			if (llr_type == 1) 
@@ -187,7 +196,7 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 			if (llr_type == 2) 
 				{llr_out[c] = llr_out_b2[c];}
 			if (llr_type == 3) 
-				{llr_out[c] = llr_out_b1[c] + llr_out_b2[c];}
+				{llr_out[c] = (temp_symbols[c] + temp_symbols_1[c])/(d_temp + d_temp_1);}
 		}
 
 				if(llr_out[c] > 7) 
@@ -196,6 +205,20 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 					llr_out[c] = -8; 
 				else llr_out[c] = (float)llr_out[c]; 
 
+
+				if(llr_out_b1[c] > 7) 
+					llr_out_b1[c] = 7; 
+				else if(llr_out_b1[c] < -8) 
+					llr_out_b1[c] = -8; 
+				else llr_out_b1[c] = (float)llr_out_b1[c];
+
+
+				if(llr_out_b2[c] > 7) 
+					llr_out_b2[c] = 7; 
+				else if(llr_out_b2[c] < -8) 
+					llr_out_b2[c] = -8; 
+				else llr_out_b2[c] = (float)llr_out_b2[c];
+
 //std::cout << (temp_symbols[c]/d_N_soft_conv[i]) << "--" << (temp_symbols_1[c]/d_N_soft_conv_1[i]) << "--" << llr[c] <<std::endl;
  
 				 
@@ -203,7 +226,7 @@ symbols_oai_1[c] = (in_1[i] * conj(d_H_soft_1[i])) /gr_complex(std::pow(std::abs
 				if(scaling)
 				{
 					{
-						if(c >= 22 && c <= 27) {llr_out[c] = 0;}
+						if(c >= 19 && c <= 30) {llr_out[c] = 0;llr_out_b2[c]=0;llr_out_b1[c]=0;}
 					}			
 				}
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);

@@ -196,7 +196,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>2467000000</value>
+      <value>2484000000</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -583,7 +583,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>4</value>
+      <value>3</value>
     </param>
     <param>
       <key>_enabled</key>
@@ -1390,7 +1390,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(492, 1184)</value>
+      <value>(404, 1304)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2405,6 +2405,14 @@
       <value>0</value>
     </param>
     <param>
+      <key>start_sub</key>
+      <value>22</value>
+    </param>
+    <param>
+      <key>stop_sub</key>
+      <value>27</value>
+    </param>
+    <param>
       <key>threshold</key>
       <value>0</value>
     </param>
@@ -2472,6 +2480,14 @@
       <value>0</value>
     </param>
     <param>
+      <key>start_sub</key>
+      <value>19</value>
+    </param>
+    <param>
+      <key>stop_sub</key>
+      <value>30</value>
+    </param>
+    <param>
       <key>threshold</key>
       <value>threshold</value>
     </param>
@@ -2537,6 +2553,14 @@
     <param>
       <key>scaling</key>
       <value>1</value>
+    </param>
+    <param>
+      <key>start_sub</key>
+      <value>19</value>
+    </param>
+    <param>
+      <key>stop_sub</key>
+      <value>30</value>
     </param>
     <param>
       <key>threshold</key>
@@ -3810,7 +3834,7 @@
     </param>
     <param>
       <key>ylabel</key>
-      <value>Noise Level Ratio</value>
+      <value>Local Noise Variance </value>
     </param>
     <param>
       <key>yunit</key>

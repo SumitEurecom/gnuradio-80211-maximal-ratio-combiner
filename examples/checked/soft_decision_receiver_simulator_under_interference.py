@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: WiFi PHY Hier
-# Generated: Mon Oct 22 04:43:00 2018
+# Generated: Sat Oct 27 10:12:44 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -77,6 +77,7 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         # Variables
         ##################################################
         self.window_size = window_size = 48
+        self.threshold = threshold = 4
         self.sync_length = sync_length = 320
         self.snr_zb = snr_zb = 20
         self.snr_wf = snr_wf = 0
@@ -92,7 +93,7 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         ##################################################
         # Blocks
         ##################################################
-        self._snr_wf_range = Range(0, 100, 0.1, 0, 200)
+        self._snr_wf_range = Range(0, 100, 0.5, 0, 200)
         self._snr_wf_win = RangeWidget(self._snr_wf_range, self.set_snr_wf, "snr_wf", "counter_slider", float)
         self.top_grid_layout.addWidget(self._snr_wf_win)
         _interf_check_box = Qt.QCheckBox("interf")
@@ -172,49 +173,6 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         self.qtgui_number_sink_0.enable_autoscale(False)
         self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_number_sink_0_win)
-        self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
-        	1024, #size
-        	firdes.WIN_BLACKMAN_hARRIS, #wintype
-        	0, #fc
-        	samp_rate, #bw
-        	"", #name
-        	1 #number of inputs
-        )
-        self.qtgui_freq_sink_x_0.set_update_time(0.10)
-        self.qtgui_freq_sink_x_0.set_y_axis(-140, 10)
-        self.qtgui_freq_sink_x_0.set_y_label('Relative Gain', 'dB')
-        self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
-        self.qtgui_freq_sink_x_0.enable_autoscale(False)
-        self.qtgui_freq_sink_x_0.enable_grid(False)
-        self.qtgui_freq_sink_x_0.set_fft_average(1.0)
-        self.qtgui_freq_sink_x_0.enable_axis_labels(True)
-        self.qtgui_freq_sink_x_0.enable_control_panel(False)
-
-        if not True:
-          self.qtgui_freq_sink_x_0.disable_legend()
-
-        if "complex" == "float" or "complex" == "msg_float":
-          self.qtgui_freq_sink_x_0.set_plot_pos_half(not True)
-
-        labels = ['', '', '', '', '',
-                  '', '', '', '', '']
-        widths = [1, 1, 1, 1, 1,
-                  1, 1, 1, 1, 1]
-        colors = ["blue", "red", "green", "black", "cyan",
-                  "magenta", "yellow", "dark red", "dark green", "dark blue"]
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-                  1.0, 1.0, 1.0, 1.0, 1.0]
-        for i in xrange(1):
-            if len(labels[i]) == 0:
-                self.qtgui_freq_sink_x_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_freq_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
         	48*10, #size
         	"", #name
@@ -256,8 +214,8 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win)
-        self.ieee802_11_soft_frame_equalizer_0_0 = ieee802_11.soft_frame_equalizer(ieee802_11.LS, 2.437e9, 20e6, 0, 0, False, False)
-        self.ieee802_11_soft_frame_equalizer_0 = ieee802_11.soft_frame_equalizer(ieee802_11.LS, 2.437e9, 20e6, 1, 0, False, False)
+        self.ieee802_11_soft_frame_equalizer_0_0 = ieee802_11.soft_frame_equalizer(ieee802_11.LS, 2.437e9, 20e6, 0, threshold, 22, 27, False, False)
+        self.ieee802_11_soft_frame_equalizer_0 = ieee802_11.soft_frame_equalizer(ieee802_11.LS, 2.437e9, 20e6, 1, threshold, 19, 30, False, False)
         self.ieee802_11_parse_mac_0_0 = ieee802_11.parse_mac(False, False)
         self.ieee802_11_parse_mac_0 = ieee802_11.parse_mac(False, False)
         self.ieee802_11_moving_average_xx_1 = ieee802_11.moving_average_cc(window_size)
@@ -300,7 +258,7 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         self.blocks_multiply_const_vxx_1 = blocks.multiply_const_vcc((interf, ))
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vcc(((10**(snr_wf/10.0))**.5, ))
         self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("".join("x" for i in range(pdu_length))), 10)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/john/myprefix/2mhznoisedata', True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/john/myprefix/4mhznoisedata', True)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, '/home/john/spawc/transmitted_wifi.pcap', False)
         self.blocks_file_sink_0_0.set_unbuffered(True)
@@ -346,7 +304,6 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         self.connect((self.channels_channel_model_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_delay_0_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_xx_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.qtgui_freq_sink_x_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.digital_ofdm_carrier_allocator_cvc_0_0_0, 0), (self.fft_vxx_0_0, 0))
         self.connect((self.digital_ofdm_cyclic_prefixer_0_0, 0), (self.foo_packet_pad2_0, 0))
@@ -413,6 +370,12 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
         self.ieee802_11_moving_average_xx_1.set_length(self.window_size)
         self.ieee802_11_moving_average_xx_0.set_length(self.window_size + 16)
 
+    def get_threshold(self):
+        return self.threshold
+
+    def set_threshold(self, threshold):
+        self.threshold = threshold
+
     def get_sync_length(self):
         return self.sync_length
 
@@ -438,7 +401,6 @@ class soft_decision_receiver_simulator_under_interference(gr.top_block, Qt.QWidg
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.channels_channel_model_0.set_frequency_offset(self.epsilon * self.freq/ self.samp_rate)
 
     def get_pdu_length(self):

@@ -3,7 +3,7 @@
   <key>ieee802_11_soft_frame_equalizer</key>
   <category>[IEEE802.11]</category>
   <import>import ieee802_11</import>
-  <make>ieee802_11.soft_frame_equalizer($algo, $freq, $bw, $scaling, $threshold, $log, $debug)</make>
+  <make>ieee802_11.soft_frame_equalizer($algo, $freq, $bw, $scaling, $threshold, $start_sub, $stop_sub, $log, $debug)</make>
 	<callback>set_algorithm($algo)</callback>
 	<callback>set_frequency($freq)</callback>
 	<callback>set_bandwidth($bw)</callback>
@@ -57,6 +57,20 @@
 		<name>Threshold</name>
 		<key>threshold</key>
 		<value>0</value>
+		<type>real</type>
+	</param>
+
+	<param>
+		<name>Start_sub</name>
+		<key>start_sub</key>
+		<value>22</value>
+		<type>real</type>
+	</param>
+
+	<param>
+		<name>Stop_sub</name>
+		<key>stop_sub</key>
+		<value>27</value>
 		<type>real</type>
 	</param>
 

@@ -22,7 +22,7 @@
 
 using namespace gr::ieee802_11::equalizer_soft;
 
-void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
+void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_complex *symbols_oai, float *noise_vec, int scaling, int threshold, int start_sub, int stop_sub, uint8_t *bits, float *llr, boost::shared_ptr<gr::digital::constellation> mod_soft, int d_frame_symbols) {
 
 	//std::cout << "yo scaling is " << scaling << std::endl;
 	
@@ -36,8 +36,10 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
                 double norm_lts1 = 0;
                 double norm_lts2 = 0;
                 double noise = 0;
-		int start = 30; // start sub carrier of interference-1
-		int stop = 36; // stop subcarrier of interference-1
+		int start = 26; // start sub carrier of interference-1 
+		int stop = 38; // stop subcarrier of interference-1 
+//		int start = 30; // start sub carrier of interference-1 ??
+//		int stop = 36; // stop subcarrier of interference-1 ??
 		double noise_interf = 0; // local noise variance of interfered-1 band
 		double noise_non_interf = 0; // local noise variance of non-interfered-1 band
 		// calculation loop	
@@ -72,7 +74,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 //std::cout << "d_snr_soft "<<d_snr_soft << std::endl;
 
 /*NLR for ch-2*/d_NLR = ((noise_interf/(2*(stop-start+1)))/(noise_non_interf/(2*(52-stop+start-1))));
-//std::cout << "Before Detection d_NLR-> "<<d_NLR << "thr"<< threshold <<std::endl;
+//std::cout << "Before Detection d_NLR-> "<<d_NLR <<std::endl;
 		if(d_NLR > threshold) 
 		{
 			d_interference = 1;
@@ -153,7 +155,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 */
 
 /*when there is deterministic interference, the code below is applicable */
-
+//std::cout << start_sub << "--" << stop_sub << std::endl;
 				llr[c] = temp_symbols[c]/d_N_soft_conv[i];
 				if(llr[c] > 7) 
 					llr[c] = 7; 
@@ -165,7 +167,7 @@ void ls_soft::equalize_soft(gr_complex *in, int n, gr_complex *symbols, gr_compl
 				if(scaling)
 				{
 					{
-						if(c >= 22 && c <= 27) {llr[c] = 0;}
+						if(c >= start_sub && c <= stop_sub) {llr[c] = 0;}
 					}			
 				}
 //TODO soft decision calc for future mod_soft->calc_soft_dec(symbols[c], 1.0);
