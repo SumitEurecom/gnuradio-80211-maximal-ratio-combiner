@@ -75,12 +75,16 @@ list(APPEND include_sources
     decode_mac_soft.h
     ether_encap.h
     frame_equalizer.h
+    frame_equalizer_dc.h
     mac.h
     mapper.h
     parse_mac.h
     signal_field.h
     sync_long.h
+    sync_long_dc.h
     sync_short.h
+    sync_short_dc.h
+    sbmrc_dc.h
 )
 
 install(
