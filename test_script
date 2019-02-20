@@ -1,0 +1,10 @@
+#!/bin/sh
+git clone https://gitlab.eurecom.fr/sumitstop/gr-ieee-80211.git
+cd gr-ieee-80211
+mkdir build && cd build 
+cmake ..
+make
+sudo make install
+sudo ldconfig
+cd ..
+gnuradio-companion examples/wifi_soft_loopback.grc
