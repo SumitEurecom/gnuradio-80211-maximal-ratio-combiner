@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<?grc format='1' created='3.7.12'?>
+<?grc format='1' created='3.7.11'?>
 <flow_graph>
   <timestamp>Thu Feb  1 03:41:57 2018</timestamp>
   <block>
@@ -73,20 +73,12 @@
       <value>True</value>
     </param>
     <param>
-      <key>sizing_mode</key>
-      <value>fixed</value>
-    </param>
-    <param>
       <key>thread_safe_setters</key>
       <value></value>
     </param>
     <param>
       <key>title</key>
       <value></value>
-    </param>
-    <param>
-      <key>placement</key>
-      <value>(0,0)</value>
     </param>
   </block>
   <block>
@@ -438,7 +430,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/john/t0+25/5drtch1.pcap</value>
+      <value>/home/ubuntu/zigbee_branch_1.pcap</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -540,7 +532,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/john/t0+25/5drtch2.pcap</value>
+      <value>/home/ubuntu/zigbee_branch_2.pcap</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -732,7 +724,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(696, 568)</value>
+      <value>(696, 536)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1341,7 +1333,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(424, 624)</value>
+      <value>(424, 520)</value>
     </param>
     <param>
       <key>_rotation</key>
